@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,5 +26,10 @@ public class CoworkingController {
       return ResponseEntity.ok(coworkingService.getCoworkingsByPrice(price));
     }
     return ResponseEntity.ok(coworkingService.getAllCoworkings());
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<CoworkingResponse> getCoworkingById(@PathVariable Long id) {
+    return ResponseEntity.ok(coworkingService.getCoworkingById(id));
   }
 }
