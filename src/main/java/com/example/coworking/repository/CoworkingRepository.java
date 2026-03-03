@@ -67,7 +67,7 @@ public class CoworkingRepository {
 
   public List<Coworking> findByPrice(Double price) {
     return storage.values().stream()
-        .filter(coworking -> coworking.getPrice() <= price)
+        .filter(coworking -> coworking.getPrice().equals(price))
         .toList();
   }
 }
