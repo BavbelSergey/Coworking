@@ -14,5 +14,7 @@ public interface CoworkingService {
 
   CoworkingResponse updateCoworking(Long id, CoworkingRequest request);
 
+  List<CoworkingResponse> getCoworkingsByPrice(Double price);
+
   void deleteCoworking(Long id);
 }
