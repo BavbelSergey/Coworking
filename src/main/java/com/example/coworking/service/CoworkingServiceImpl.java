@@ -28,9 +28,6 @@ public class CoworkingServiceImpl implements CoworkingService {
   @Override
   public CoworkingResponse getCoworkingById(Long id) {
     Coworking coworking = coworkingRepository.findById(id);
-    if (coworking == null) {
-      throw new RuntimeException("Coworking not found with id" + id);
-    }
     return coworkingMapper.toResponse(coworking);
   }
 
@@ -38,15 +35,12 @@ public class CoworkingServiceImpl implements CoworkingService {
   public List<CoworkingResponse> getAllCoworkings() {
     return coworkingRepository.findAll().stream()
         .map(coworkingMapper::toResponse)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override
   public CoworkingResponse updateCoworking(Long id, CoworkingRequest request) {
     Coworking existingCoworking = coworkingRepository.findById(id);
-    if (existingCoworking == null) {
-      throw new RuntimeException("Book not found with id: " + id);
-    }
 
     existingCoworking.setName(request.getName());
     existingCoworking.setSize(request.getSize());
@@ -65,7 +59,7 @@ public class CoworkingServiceImpl implements CoworkingService {
   public List<CoworkingResponse> getCoworkingsByPrice(Double price) {
     return coworkingRepository.findByPrice(price).stream()
         .map(coworkingMapper::toResponse)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override
