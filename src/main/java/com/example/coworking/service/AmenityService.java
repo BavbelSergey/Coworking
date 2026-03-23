@@ -52,10 +52,9 @@ public class AmenityService {
     Amenity amenity = amenityRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Amenity not found with id: " + id));
 
-    if (updateDto.getName() != null && !updateDto.getName().equals(amenity.getName())) {
-      if (amenityRepository.existsByName(updateDto.getName())) {
-        throw new RuntimeException("Amenity with name " + updateDto.getName() + " already exists");
-      }
+    if (updateDto.getName() != null && !updateDto.getName().equals(amenity.getName())
+        && amenityRepository.existsByName(updateDto.getName())) {
+      throw new RuntimeException("Amenity with name " + updateDto.getName() + " already exists");
     }
 
     amenityMapper.updateEntity(updateDto, amenity);

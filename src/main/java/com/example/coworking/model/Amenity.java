@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

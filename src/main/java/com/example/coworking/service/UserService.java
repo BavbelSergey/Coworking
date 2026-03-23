@@ -61,10 +61,9 @@ public class UserService {
       }
     }
 
-    if (updateDto.getPhone() != null && !updateDto.getPhone().equals(user.getPhone())) {
-      if (userRepository.existsByPhone(updateDto.getPhone())) {
-        throw new RuntimeException("User with phone " + updateDto.getPhone() + " already exists");
-      }
+    if (updateDto.getPhone() != null && !updateDto.getPhone().equals(user.getPhone())
+        && userRepository.existsByPhone(updateDto.getPhone())) {
+      throw new RuntimeException("User with phone " + updateDto.getPhone() + " already exists");
     }
 
     userMapper.updateEntity(updateDto, user);

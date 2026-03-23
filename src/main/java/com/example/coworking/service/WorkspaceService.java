@@ -125,7 +125,7 @@ public class WorkspaceService {
     if (amenityIds != null && !amenityIds.isEmpty()) {
       workspaces = workspaces.stream().filter(
           w -> w.getAmenities() != null && w.getAmenities().stream().map(Amenity::getId)
-              .collect(Collectors.toSet()).containsAll(amenityIds)).collect(Collectors.toList());
+              .collect(Collectors.toSet()).containsAll(amenityIds)).toList();
     }
 
     return workspaceMapper.toDtoList(workspaces);
