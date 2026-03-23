@@ -8,6 +8,7 @@ import com.example.coworking.model.BookingStatus;
 import com.example.coworking.model.User;
 import com.example.coworking.model.Workspace;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -78,7 +79,7 @@ public class BookingMapper {
 
   public List<BookingDto> toDtoList(List<Booking> bookings) {
     if (bookings == null) {
-      return null;
+      return new ArrayList<>();
     }
     return bookings.stream().map(this::toDto).toList();
   }

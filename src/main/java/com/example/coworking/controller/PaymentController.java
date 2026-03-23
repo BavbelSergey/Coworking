@@ -58,15 +58,7 @@ public class PaymentController {
     PaymentDto updatedPayment = paymentService.updatePayment(id, updateDto);
     return ResponseEntity.ok(updatedPayment);
   }
-
-  @PatchMapping("/{id}")
-  public ResponseEntity<PaymentDto> partialUpdatePayment(
-      @PathVariable Long id,
-      @RequestBody PaymentUpdateDto updateDto) {
-    PaymentDto updatedPayment = paymentService.updatePayment(id, updateDto);
-    return ResponseEntity.ok(updatedPayment);
-  }
-
+  
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
     paymentService.deletePayment(id);

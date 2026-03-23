@@ -5,6 +5,7 @@ import com.example.coworking.dto.UserDto;
 import com.example.coworking.dto.UserUpdateDto;
 import com.example.coworking.model.BookingStatus;
 import com.example.coworking.model.User;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -64,7 +65,7 @@ public class UserMapper {
 
   public List<UserDto> toDtoList(List<User> users) {
     if (users == null) {
-      return null;
+      return new ArrayList<>();
     }
     return users.stream().map(this::toDto).toList();
   }

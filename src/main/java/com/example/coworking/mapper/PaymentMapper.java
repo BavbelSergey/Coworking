@@ -6,6 +6,7 @@ import com.example.coworking.dto.PaymentUpdateDto;
 import com.example.coworking.model.Booking;
 import com.example.coworking.model.Payment;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -71,7 +72,7 @@ public class PaymentMapper {
 
   public List<PaymentDto> toDtoList(List<Payment> payments) {
     if (payments == null) {
-      return null;
+      return new ArrayList<>();
     }
     return payments.stream()
         .map(this::toDto)

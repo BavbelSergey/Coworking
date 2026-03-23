@@ -55,14 +55,6 @@ public class BookingController {
     return ResponseEntity.ok(updatedBooking);
   }
 
-  @PatchMapping("/{id}")
-  public ResponseEntity<BookingDto> partialUpdateBooking(
-      @PathVariable Long id,
-      @RequestBody BookingUpdateDto updateDto) {
-    BookingDto updatedBooking = bookingService.updateBooking(id, updateDto);
-    return ResponseEntity.ok(updatedBooking);
-  }
-
   @PostMapping("/{id}/cancel")
   public ResponseEntity<BookingDto> cancelBooking(@PathVariable Long id) {
     BookingDto cancelledBooking = bookingService.cancelBooking(id);

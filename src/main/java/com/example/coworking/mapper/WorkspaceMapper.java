@@ -1,8 +1,10 @@
 package com.example.coworking.mapper;
 
 import com.example.coworking.dto.WorkspaceDto;
+import com.example.coworking.dto.WorkspaceDto.AmenityDto;
 import com.example.coworking.model.Amenity;
 import com.example.coworking.model.Workspace;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -55,16 +57,16 @@ public class WorkspaceMapper {
 
   public List<WorkspaceDto> toDtoList(List<Workspace> workspaces) {
     if (workspaces == null) {
-      return null;
+      return new ArrayList<>();
     }
     return workspaces.stream()
         .map(this::toDto)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private List<WorkspaceDto.AmenityDto> mapAmenitiesToDto(List<Amenity> amenities) {
     if (amenities == null) {
-      return null;
+      return new ArrayList<>();
     }
     return amenities.stream()
         .map(this::mapAmenityToDto)
@@ -73,7 +75,7 @@ public class WorkspaceMapper {
 
   private WorkspaceDto.AmenityDto mapAmenityToDto(Amenity amenity) {
     if (amenity == null) {
-      return null;
+      return new AmenityDto();
     }
 
     return WorkspaceDto.AmenityDto.builder()

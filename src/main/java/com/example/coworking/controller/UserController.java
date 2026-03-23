@@ -56,14 +56,6 @@ public class UserController {
     return ResponseEntity.ok(updatedUser);
   }
 
-  @PatchMapping("/{id}")
-  public ResponseEntity<UserDto> partialUpdateUser(
-      @PathVariable Long id,
-      @RequestBody UserUpdateDto updateDto) {
-    UserDto updatedUser = userService.updateUser(id, updateDto);
-    return ResponseEntity.ok(updatedUser);
-  }
-
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
     userService.deleteUser(id);

@@ -4,8 +4,8 @@ import com.example.coworking.dto.AmenityCreateDto;
 import com.example.coworking.dto.AmenityDto;
 import com.example.coworking.dto.AmenityUpdateDto;
 import com.example.coworking.model.Amenity;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -55,8 +55,8 @@ public class AmenityMapper {
 
   public List<AmenityDto> toDtoList(List<Amenity> amenities) {
     if (amenities == null) {
-      return null;
+      return new ArrayList<>();
     }
-    return amenities.stream().map(this::toDto).collect(Collectors.toList());
+    return amenities.stream().map(this::toDto).toList();
   }
 }
