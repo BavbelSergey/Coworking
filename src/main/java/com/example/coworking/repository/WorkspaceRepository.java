@@ -1,29 +1,41 @@
 package com.example.coworking.repository;
 
 import com.example.coworking.model.Workspace;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import lombok.NonNull;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CoworkingRepository extends JpaRepository<Workspace, Long> {
+public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
 
-  List<Workspace> findByName(String name);
+  @Override
+  @EntityGraph(attributePaths = {"amenities"})
+  @NonNull
+  List<Workspace> findAll();
 
-  List<Workspace> findByNameContainingIgnoreCase(String name);
+  boolean existsByNumber(Integer number);
 
-  List<Workspace> findByAddressContainingIgnoreCase(String address);
+  Optional<Workspace> findByNumber(Integer number);
 
-  List<Workspace> findByPriceBetween(Double minPrice, Double maxPrice);
+  void deleteByNumber(Integer number);
 
-  List<Workspace> findBySizeGreaterThanEqual(Integer size);
+  @EntityGraph(attributePaths = {"amenities"})
+  List<Workspace> findByCapacityGreaterThanEqual(Integer capacity);
 
-  Optional<Workspace> findByPhoneNumber(String phoneNumber);
+  @EntityGraph(attributePaths = {"amenities"})
+  List<Workspace> findByPricePerHourLessThanEqual(BigDecimal pricePerHour);
 
-  boolean existsByName(String name);
+  @EntityGraph(attributePaths = {"amenities"})
+  @Query("SELECT w FROM Workspace w WHERE "
+      + "(:minCapacity IS NULL OR w.capacity >= :minCapacity) AND "
+      + "(:maxPrice IS NULL OR w.pricePerHour <= :maxPrice)")
+  List<Workspace> findAvailableWorkspaces(@Param("minCapacity") Integer minCapacity,
+      @Param("maxPrice") BigDecimal maxPrice);
 
-  long countBySizeGreaterThan(Integer size);
-
-  void deleteByName(String name);
 }
