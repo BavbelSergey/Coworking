@@ -21,6 +21,7 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
 
   boolean existsByNumber(Integer number);
 
+  @EntityGraph(attributePaths = {"amenities"})
   Optional<Workspace> findByNumber(Integer number);
 
   void deleteByNumber(Integer number);

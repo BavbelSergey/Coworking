@@ -38,7 +38,6 @@ public class PaymentController {
     return ResponseEntity.ok(paymentService.getPaymentById(id));
   }
 
-  // Получить платеж по ID брони
   @GetMapping("/booking/{bookingId}")
   public ResponseEntity<PaymentDto> getPaymentByBookingId(@PathVariable Long bookingId) {
     return ResponseEntity.ok(paymentService.getPaymentByBookingId(bookingId));
