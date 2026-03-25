@@ -3,7 +3,6 @@ package com.example.coworking.repository;
 import com.example.coworking.model.User;
 import java.util.List;
 import java.util.Optional;
-import lombok.NonNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
