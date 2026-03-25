@@ -3,7 +3,6 @@ package com.example.coworking.mapper;
 import com.example.coworking.dto.UserCreateDto;
 import com.example.coworking.dto.UserDto;
 import com.example.coworking.dto.UserUpdateDto;
-import com.example.coworking.model.BookingStatus;
 import com.example.coworking.model.User;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,15 +21,6 @@ public class UserMapper {
     dto.setName(user.getName());
     dto.setEmail(user.getEmail());
     dto.setPhone(user.getPhone());
-
-    if (user.getBookings() != null) {
-      dto.setTotalBookings(user.getBookings().size());
-
-      long activeCount = user.getBookings().stream()
-          .filter(b -> b.getStatus() == BookingStatus.PENDING).count();
-      dto.setActiveBookings((int) activeCount);
-    }
-
     return dto;
   }
 
