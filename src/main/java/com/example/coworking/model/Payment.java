@@ -37,7 +37,7 @@ public class Payment {
   private LocalDateTime date;
 
   @ToString.Include
-  private String paymentMethod; // CARD, CASH, etc.
+  private String paymentMethod;
 
   @OneToOne(fetch = jakarta.persistence.FetchType.LAZY)
   @JoinColumn(name = "booking_id")

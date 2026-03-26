@@ -14,5 +14,4 @@ public class AmenityDto {
   private Long id;
   private String name;
   private String description;
-  private Integer workspacesCount;
 }

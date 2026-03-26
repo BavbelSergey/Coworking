@@ -36,7 +36,7 @@ public class PaymentMapper {
 
       if (payment.getBooking().getWorkspace() != null) {
         dto.setWorkspaceId(payment.getBooking().getWorkspace().getId());
-        dto.setWorkspaceNumber(payment.getBooking().getWorkspace().getNumber());
+
       }
     }
 

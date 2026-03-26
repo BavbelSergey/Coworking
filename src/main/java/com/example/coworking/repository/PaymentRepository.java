@@ -4,6 +4,7 @@ import com.example.coworking.model.Payment;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import lombok.NonNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
   @EntityGraph(attributePaths = {"booking", "booking.user", "booking.workspace"})
   Optional<Payment> findByBookingId(Long bookingId);
+
+  @NonNull
+  @EntityGraph(attributePaths = {"booking", "booking.user", "booking.workspace"})
+  List<Payment> findAll();
 
   List<Payment> findByDateBetween(LocalDateTime start, LocalDateTime end);
 

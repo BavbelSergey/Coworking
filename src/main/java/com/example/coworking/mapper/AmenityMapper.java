@@ -21,10 +21,6 @@ public class AmenityMapper {
     dto.setName(amenity.getName());
     dto.setDescription(amenity.getDescription());
 
-    if (amenity.getWorkspaces() != null) {
-      dto.setWorkspacesCount(amenity.getWorkspaces().size());
-    }
-
     return dto;
   }
 

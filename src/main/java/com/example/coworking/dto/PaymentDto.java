@@ -24,5 +24,4 @@ public class PaymentDto {
   private Long userId;
   private String userName;
   private Long workspaceId;
-  private Integer workspaceNumber;
 }

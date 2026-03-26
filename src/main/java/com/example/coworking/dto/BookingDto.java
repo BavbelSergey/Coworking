@@ -25,5 +25,4 @@ public class BookingDto {
   private String userName;
   private String userEmail;
   private Integer workspaceNumber;
-  private String workspaceType;
 }
