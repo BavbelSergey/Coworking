@@ -18,16 +18,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
   @EntityGraph(attributePaths = {"user", "workspace", "payment"})
   List<Booking> findAll();
 
-  @EntityGraph(attributePaths = {"user", "workspace"})
+  @EntityGraph(attributePaths = {"user", "workspace", "payment"})
   List<Booking> findByUserId(Long userId);
 
-  @EntityGraph(attributePaths = {"user", "workspace"})
+  @EntityGraph(attributePaths = {"user", "workspace", "payment"})
   List<Booking> findByWorkspaceId(Long workspaceId);
 
-  @EntityGraph(attributePaths = {"user", "workspace"})
+  @EntityGraph(attributePaths = {"user", "workspace", "payment"})
   List<Booking> findByStatus(BookingStatus status);
 
-  @EntityGraph(attributePaths = {"user", "workspace"})
+  @EntityGraph(attributePaths = {"user", "workspace", "payment"})
   List<Booking> findByUserIdAndStatus(Long userId, BookingStatus status);
 
   @EntityGraph(attributePaths = {"user", "workspace"})
