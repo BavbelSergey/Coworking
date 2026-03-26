@@ -8,6 +8,7 @@ import com.example.coworking.model.Booking;
 import com.example.coworking.model.Payment;
 import com.example.coworking.repository.BookingRepository;
 import com.example.coworking.repository.PaymentRepository;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+//@Transactional(readOnly = true)
 public class PaymentService {
 
   private final PaymentRepository paymentRepository;
@@ -39,7 +40,7 @@ public class PaymentService {
     return paymentMapper.toDto(payment);
   }
 
-  @Transactional
+  /*@Transactional
   public PaymentDto createPayment(PaymentCreateDto createDto) {
     Booking booking = bookingRepository.findById(createDto.getBookingId())
         .orElseThrow(
@@ -52,6 +53,30 @@ public class PaymentService {
 
     Payment payment = paymentMapper.toEntity(createDto, booking);
     Payment savedPayment = paymentRepository.save(payment);
+
+    return paymentMapper.toDto(savedPayment);
+  }*/
+
+  @Transactional
+  public PaymentDto createPayment(PaymentCreateDto createDto) {
+    Booking booking = null;
+    try {
+      booking = bookingRepository.findById(createDto.getBookingId()).orElse(null);
+    } catch (Exception e) {
+
+    }
+
+    if (booking != null && paymentRepository.existsByBookingId(createDto.getBookingId())) {
+      throw new RuntimeException("Payment already exists for booking id: " + createDto.getBookingId());
+    }
+
+    Payment payment = paymentMapper.toEntity(createDto, booking);
+
+    Payment savedPayment = paymentRepository.save(payment);
+
+    if (savedPayment.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+      throw new RuntimeException("Invalid amount - transaction will rollback");
+    }
 
     return paymentMapper.toDto(savedPayment);
   }

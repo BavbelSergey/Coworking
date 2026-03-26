@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class PaymentCreateDto {
 
   @NotNull(message = "Сумма обязательна")
-  @DecimalMin(value = "0.01", message = "Сумма должна быть больше 0")
+  //@DecimalMin(value = "0.01", message = "Сумма должна быть больше 0")
   private BigDecimal amount;
 
   @NotNull(message = "Способ оплаты обязателен")

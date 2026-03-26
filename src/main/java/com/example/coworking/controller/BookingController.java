@@ -122,6 +122,7 @@ public class BookingController {
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
     List<BookingDto> bookings = bookingService.getBookingsInPeriod(start, end);
+
     return ResponseEntity.ok(bookings);
   }
 
