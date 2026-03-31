@@ -5,6 +5,9 @@ import com.example.coworking.service.WorkspaceService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,10 +28,10 @@ public class WorkspaceController {
 
   private final WorkspaceService workspaceService;
 
-  @GetMapping
-  public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces() {
-    List<WorkspaceDto> workspaces = workspaceService.getAllWorkspaces();
-    return ResponseEntity.ok(workspaces);
+  @GetMapping("/paged")
+  public ResponseEntity<Page<WorkspaceDto>> getAllWorkspaces(
+      @PageableDefault(size = 20, sort = "number") Pageable pageable) {
+    return ResponseEntity.ok(workspaceService.getAllWorkspaces(pageable));
   }
 
   @GetMapping("/{id}")
