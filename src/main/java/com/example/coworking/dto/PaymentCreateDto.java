@@ -11,12 +11,11 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class PaymentCreateDto {
 
   @NotNull(message = "Сумма обязательна")
-  //@DecimalMin(value = "0.01", message = "Сумма должна быть больше 0")
+  @DecimalMin(value = "0.01", message = "Сумма должна быть больше 0")
   private BigDecimal amount;
 
   @NotNull(message = "Способ оплаты обязателен")
@@ -25,4 +24,13 @@ public class PaymentCreateDto {
 
   @NotNull(message = "ID брони обязателен")
   private Long bookingId;
+
+  public PaymentCreateDto(BigDecimal amount, String paymentMethod, Long bookingId) {
+    if (amount != null && amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Сумма должна быть больше 0, получено: " + amount);
+    }
+    this.amount = amount;
+    this.paymentMethod = paymentMethod;
+    this.bookingId = bookingId;
+  }
 }

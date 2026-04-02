@@ -34,8 +34,8 @@ public class BookingService {
   private final PaymentMapper paymentMapper;
   private final PaymentRepository paymentRepository;
 
-  public BookingDto createBookingWithPayment(
-      BookingCreateDto bookingCreateDto, BigDecimal amount, String paymentMethod) {
+  public BookingDto createBookingWithPayment(BookingCreateDto bookingCreateDto, BigDecimal amount,
+      String paymentMethod) {
 
     User user = userRepository.findById(bookingCreateDto.getUserId())
         .orElseThrow(() -> new RuntimeException("User not found"));
@@ -45,30 +45,24 @@ public class BookingService {
     Booking booking = bookingMapper.toEntity(bookingCreateDto, user, workspace);
     Booking savedBooking = bookingRepository.save(booking);
 
-    PaymentCreateDto paymentCreateDto = new PaymentCreateDto();
-    paymentCreateDto.setBookingId(savedBooking.getId());
-    paymentCreateDto.setAmount(amount);
-    paymentCreateDto.setPaymentMethod(paymentMethod);
+    PaymentCreateDto paymentCreateDto = new PaymentCreateDto(amount, paymentMethod,
+        savedBooking.getId());
 
     Payment payment = paymentMapper.toEntity(paymentCreateDto, savedBooking);
     Payment savedPayment = paymentRepository.save(payment);
 
-    if (amount.compareTo(BigDecimal.ZERO) < 0) {
-      throw new RuntimeException("Отрицательная сумма платежа!");
-    }
-
     return bookingMapper.toDto(savedBooking);
   }
 
-  public BookingDto createBookingWithPaymentWithoutTransaction(
-      BookingCreateDto bookingCreateDto, BigDecimal amount, String paymentMethod) {
+  public BookingDto createBookingWithPaymentWithoutTransaction(BookingCreateDto bookingCreateDto,
+      BigDecimal amount, String paymentMethod) {
 
     return createBookingWithPayment(bookingCreateDto, amount, paymentMethod);
   }
 
   @Transactional
-  public BookingDto createBookingWithPaymentWithTransaction(
-      BookingCreateDto bookingCreateDto, BigDecimal amount, String paymentMethod) {
+  public BookingDto createBookingWithPaymentWithTransaction(BookingCreateDto bookingCreateDto,
+      BigDecimal amount, String paymentMethod) {
 
     return createBookingWithPayment(bookingCreateDto, amount, paymentMethod);
   }
