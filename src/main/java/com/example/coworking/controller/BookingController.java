@@ -5,7 +5,6 @@ import com.example.coworking.dto.BookingDto;
 import com.example.coworking.dto.BookingUpdateDto;
 import com.example.coworking.service.BookingService;
 import jakarta.validation.Valid;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,36 +28,6 @@ public class BookingController {
 
   private final BookingService bookingService;
 
-  @PostMapping("/test/no-transaction")
-  public ResponseEntity<?> createBookingWithPaymentNoTransaction(
-      @Valid @RequestBody BookingCreateDto bookingCreateDto, @RequestParam BigDecimal amount,
-      @RequestParam(defaultValue = "CARD") String paymentMethod) {
-
-    try {
-      BookingDto result = bookingService.createBookingWithPaymentWithoutTransaction(
-          bookingCreateDto, amount, paymentMethod);
-      return new ResponseEntity<>(result, HttpStatus.CREATED);
-    } catch (RuntimeException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("ошибка: " + e.getMessage());
-    }
-  }
-
-  @PostMapping("/test/with-transaction")
-  public ResponseEntity<?> createBookingWithPaymentWithTransaction(
-      @Valid @RequestBody BookingCreateDto bookingCreateDto, @RequestParam BigDecimal amount,
-      @RequestParam(defaultValue = "CARD") String paymentMethod) {
-
-    try {
-      BookingDto result = bookingService.createBookingWithPaymentWithTransaction(bookingCreateDto,
-          amount, paymentMethod);
-      return new ResponseEntity<>(result, HttpStatus.CREATED);
-    } catch (RuntimeException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("ОШИБКА: " + e.getMessage());
-    }
-  }
-
   @GetMapping
   public ResponseEntity<List<BookingDto>> getAllBookings() {
     List<BookingDto> bookings = bookingService.getAllBookings();
@@ -78,7 +47,8 @@ public class BookingController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<BookingDto> updateBooking(@PathVariable Long id,
+  public ResponseEntity<BookingDto> updateBooking(
+      @PathVariable Long id,
       @Valid @RequestBody BookingUpdateDto updateDto) {
     BookingDto updatedBooking = bookingService.updateBooking(id, updateDto);
     return ResponseEntity.ok(updatedBooking);
@@ -133,7 +103,8 @@ public class BookingController {
   }
 
   @GetMapping("/available")
-  public ResponseEntity<Boolean> checkAvailability(@RequestParam Long workspaceId,
+  public ResponseEntity<Boolean> checkAvailability(
+      @RequestParam Long workspaceId,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
     boolean isAvailable = bookingService.isWorkspaceAvailable(workspaceId, start, end);

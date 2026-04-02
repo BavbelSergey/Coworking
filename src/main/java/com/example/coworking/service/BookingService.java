@@ -3,19 +3,14 @@ package com.example.coworking.service;
 import com.example.coworking.dto.BookingCreateDto;
 import com.example.coworking.dto.BookingDto;
 import com.example.coworking.dto.BookingUpdateDto;
-import com.example.coworking.dto.PaymentCreateDto;
 import com.example.coworking.mapper.BookingMapper;
-import com.example.coworking.mapper.PaymentMapper;
 import com.example.coworking.model.Booking;
 import com.example.coworking.model.BookingStatus;
-import com.example.coworking.model.Payment;
 import com.example.coworking.model.User;
 import com.example.coworking.model.Workspace;
 import com.example.coworking.repository.BookingRepository;
-import com.example.coworking.repository.PaymentRepository;
 import com.example.coworking.repository.UserRepository;
 import com.example.coworking.repository.WorkspaceRepository;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,54 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-//@Transactional
+@Transactional(readOnly = true)
 public class BookingService {
 
   private final BookingRepository bookingRepository;
   private final UserRepository userRepository;
   private final WorkspaceRepository workspaceRepository;
   private final BookingMapper bookingMapper;
-  private final PaymentMapper paymentMapper;
-  private final PaymentRepository paymentRepository;
-
-  public BookingDto createBookingWithPayment(
-      BookingCreateDto bookingCreateDto, BigDecimal amount, String paymentMethod) {
-
-    User user = userRepository.findById(bookingCreateDto.getUserId())
-        .orElseThrow(() -> new RuntimeException("User not found"));
-    Workspace workspace = workspaceRepository.findById(bookingCreateDto.getWorkspaceId())
-        .orElseThrow(() -> new RuntimeException("Workspace not found"));
-
-    Booking booking = bookingMapper.toEntity(bookingCreateDto, user, workspace);
-    Booking savedBooking = bookingRepository.save(booking);
-
-    PaymentCreateDto paymentCreateDto = new PaymentCreateDto();
-    paymentCreateDto.setBookingId(savedBooking.getId());
-    paymentCreateDto.setAmount(amount);
-    paymentCreateDto.setPaymentMethod(paymentMethod);
-
-    Payment payment = paymentMapper.toEntity(paymentCreateDto, savedBooking);
-    Payment savedPayment = paymentRepository.save(payment);
-
-    if (amount.compareTo(BigDecimal.ZERO) < 0) {
-      throw new RuntimeException("Отрицательная сумма платежа!");
-    }
-
-    return bookingMapper.toDto(savedBooking);
-  }
-
-  public BookingDto createBookingWithPaymentWithoutTransaction(
-      BookingCreateDto bookingCreateDto, BigDecimal amount, String paymentMethod) {
-
-    return createBookingWithPayment(bookingCreateDto, amount, paymentMethod);
-  }
-
-  @Transactional
-  public BookingDto createBookingWithPaymentWithTransaction(
-      BookingCreateDto bookingCreateDto, BigDecimal amount, String paymentMethod) {
-
-    return createBookingWithPayment(bookingCreateDto, amount, paymentMethod);
-  }
 
   public List<BookingDto> getAllBookings() {
     return bookingMapper.toDtoList(bookingRepository.findAll());
