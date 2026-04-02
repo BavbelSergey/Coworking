@@ -8,6 +8,10 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +32,10 @@ public class PaymentController {
 
   private final PaymentService paymentService;
 
-  @GetMapping
-  public ResponseEntity<List<PaymentDto>> getAllPayments() {
-    return ResponseEntity.ok(paymentService.getAllPayments());
+  @GetMapping("/paged")
+  public ResponseEntity<Page<PaymentDto>> getAllPaymentsPaged(
+      @PageableDefault(size = 20, sort = "date", direction = Direction.DESC) Pageable pageable) {
+    return ResponseEntity.ok(paymentService.getAllPayments(pageable));
   }
 
   @GetMapping("/{id}")
