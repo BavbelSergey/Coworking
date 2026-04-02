@@ -26,8 +26,22 @@ public class WorkspaceService {
   private final WorkspaceMapper workspaceMapper;
 
   public Page<WorkspaceDto> getAllWorkspaces(Pageable pageable) {
-    return workspaceRepository.findAll(pageable)
-        .map(workspaceMapper::toDto);
+    return workspaceRepository.findAll(pageable).map(workspaceMapper::toDto);
+  }
+
+  public Page<WorkspaceDto> findWorkspacesByAmenities(Integer minCapacity, Double maxPrice,
+      List<Long> amenityIds, Pageable pageable) {
+
+    if (amenityIds == null || amenityIds.isEmpty()) {
+      throw new IllegalArgumentException("At least one amenity must be specified");
+    }
+
+    BigDecimal maxPriceDecimal = maxPrice != null ? BigDecimal.valueOf(maxPrice) : null;
+
+    Page<Workspace> workspaces = workspaceRepository.findByAmenitiesAndFilters(minCapacity,
+        maxPriceDecimal, amenityIds, pageable);
+
+    return workspaces.map(workspaceMapper::toDto);
   }
 
   public WorkspaceDto getWorkspaceById(Long id) {
