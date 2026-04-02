@@ -5,8 +5,6 @@ import com.example.coworking.model.BookingStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.NonNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,7 +16,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
   @NonNull
   @EntityGraph(attributePaths = {"user", "workspace", "payment"})
-  Page<Booking> findAll(@org.jspecify.annotations.NonNull Pageable pageable);
+  List<Booking> findAll();
 
   @EntityGraph(attributePaths = {"user", "workspace", "payment"})
   List<Booking> findByUserId(Long userId);

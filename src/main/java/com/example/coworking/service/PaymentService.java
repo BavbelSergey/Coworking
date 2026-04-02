@@ -8,11 +8,10 @@ import com.example.coworking.model.Booking;
 import com.example.coworking.model.Payment;
 import com.example.coworking.repository.BookingRepository;
 import com.example.coworking.repository.PaymentRepository;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +24,9 @@ public class PaymentService {
   private final BookingRepository bookingRepository;
   private final PaymentMapper paymentMapper;
 
-  public Page<PaymentDto> getAllPayments(Pageable pageable) {
-    return paymentRepository.findAll(pageable).map(paymentMapper::toDto);
+  public List<PaymentDto> getAllPayments() {
+    return paymentMapper.toDtoList(paymentRepository.findAll());
   }
-
 
   public PaymentDto getPaymentById(Long id) {
     Payment payment = paymentRepository.findById(id)
@@ -44,8 +42,9 @@ public class PaymentService {
 
   @Transactional
   public PaymentDto createPayment(PaymentCreateDto createDto) {
-    Booking booking = bookingRepository.findById(createDto.getBookingId()).orElseThrow(
-        () -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
+    Booking booking = bookingRepository.findById(createDto.getBookingId())
+        .orElseThrow(
+            () -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
 
     if (paymentRepository.existsByBookingId(createDto.getBookingId())) {
       throw new RuntimeException(

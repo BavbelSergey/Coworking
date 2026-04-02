@@ -8,8 +8,6 @@ import com.example.coworking.model.User;
 import com.example.coworking.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,8 +19,8 @@ public class UserService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
 
-  public Page<UserDto> getAllUsers(Pageable pageable) {
-    return userRepository.findAll(pageable).map(userMapper::toDto);
+  public List<UserDto> getAllUsers() {
+    return userMapper.toDtoList(userRepository.findAll());
   }
 
   public UserDto getUserById(Long id) {

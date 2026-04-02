@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.NonNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,7 +19,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
   @NonNull
   @EntityGraph(attributePaths = {"booking", "booking.user", "booking.workspace"})
-  Page<Payment> findAll(@org.jspecify.annotations.NonNull Pageable pageable);
+  List<Payment> findAll();
 
   List<Payment> findByDateBetween(LocalDateTime start, LocalDateTime end);
 

@@ -14,8 +14,6 @@ import com.example.coworking.repository.WorkspaceRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +27,8 @@ public class BookingService {
   private final WorkspaceRepository workspaceRepository;
   private final BookingMapper bookingMapper;
 
-  public Page<BookingDto> getAllBookings(Pageable pageable) {
-    return bookingRepository.findAll(pageable).map(bookingMapper::toDto);
+  public List<BookingDto> getAllBookings() {
+    return bookingMapper.toDtoList(bookingRepository.findAll());
   }
 
   public BookingDto getBookingById(Long id) {

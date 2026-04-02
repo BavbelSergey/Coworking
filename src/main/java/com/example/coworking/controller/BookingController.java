@@ -8,9 +8,6 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +28,10 @@ public class BookingController {
 
   private final BookingService bookingService;
 
-  @GetMapping("/paged")
-  public ResponseEntity<Page<BookingDto>> getAllBookings(
-      @PageableDefault(size = 20, sort = "status") Pageable pageable) {
-    return ResponseEntity.ok(bookingService.getAllBookings(pageable));
+  @GetMapping
+  public ResponseEntity<List<BookingDto>> getAllBookings() {
+    List<BookingDto> bookings = bookingService.getAllBookings();
+    return ResponseEntity.ok(bookings);
   }
 
   @GetMapping("/{id}")
@@ -50,7 +47,8 @@ public class BookingController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<BookingDto> updateBooking(@PathVariable Long id,
+  public ResponseEntity<BookingDto> updateBooking(
+      @PathVariable Long id,
       @Valid @RequestBody BookingUpdateDto updateDto) {
     BookingDto updatedBooking = bookingService.updateBooking(id, updateDto);
     return ResponseEntity.ok(updatedBooking);
@@ -105,7 +103,8 @@ public class BookingController {
   }
 
   @GetMapping("/available")
-  public ResponseEntity<Boolean> checkAvailability(@RequestParam Long workspaceId,
+  public ResponseEntity<Boolean> checkAvailability(
+      @RequestParam Long workspaceId,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
     boolean isAvailable = bookingService.isWorkspaceAvailable(workspaceId, start, end);

@@ -11,8 +11,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +23,8 @@ public class WorkspaceService {
   private final AmenityRepository amenityRepository;
   private final WorkspaceMapper workspaceMapper;
 
-  public Page<WorkspaceDto> getAllWorkspaces(Pageable pageable) {
-    return workspaceRepository.findAll(pageable)
-        .map(workspaceMapper::toDto);
+  public List<WorkspaceDto> getAllWorkspaces() {
+    return workspaceMapper.toDtoList(workspaceRepository.findAll());
   }
 
   public WorkspaceDto getWorkspaceById(Long id) {
