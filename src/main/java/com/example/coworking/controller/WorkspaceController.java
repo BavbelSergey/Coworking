@@ -34,18 +34,6 @@ public class WorkspaceController {
     return ResponseEntity.ok(workspaceService.getAllWorkspaces(pageable));
   }
 
-  @GetMapping("/by-amenities")
-  public ResponseEntity<Page<WorkspaceDto>> getWorkspacesByAmenities(
-      @RequestParam(required = false) Integer minCapacity,
-      @RequestParam(required = false) Double maxPrice,
-      @RequestParam List<Long> amenityIds,
-      @PageableDefault(size = 20, sort = "pricePerHour") Pageable pageable) {
-
-    Page<WorkspaceDto> workspaces = workspaceService.findWorkspacesByAmenities(
-        minCapacity, maxPrice, amenityIds, pageable);
-    return ResponseEntity.ok(workspaces);
-  }
-
   @GetMapping("/{id}")
   public ResponseEntity<WorkspaceDto> getWorkspaceById(@PathVariable Long id) {
     WorkspaceDto workspace = workspaceService.getWorkspaceById(id);
