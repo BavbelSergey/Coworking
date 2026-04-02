@@ -21,6 +21,15 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
   @EntityGraph(attributePaths = {"amenities"})
   Page<Workspace> findAll(@org.jspecify.annotations.NonNull Pageable pageable);
 
+  @Query("SELECT DISTINCT w FROM Workspace w " + "JOIN w.amenities a "
+      + "WHERE (:#{#minCapacity == null} = true OR w.capacity >= :minCapacity) "
+      + "AND (:#{#maxPrice == null} = true OR w.pricePerHour <= :maxPrice) "
+      + "AND a.id IN :amenityIds " + "GROUP BY w.id, w.number, w.capacity, w.pricePerHour "
+      + "HAVING COUNT(DISTINCT a.id) = :#{#amenityIds.size()} " + "ORDER BY w.pricePerHour ASC")
+  Page<Workspace> findByAmenitiesAndFilters(@Param("minCapacity") Integer minCapacity,
+      @Param("maxPrice") BigDecimal maxPrice, @Param("amenityIds") List<Long> amenityIds,
+      Pageable pageable);
+
   boolean existsByNumber(Integer number);
 
   @EntityGraph(attributePaths = {"amenities"})
