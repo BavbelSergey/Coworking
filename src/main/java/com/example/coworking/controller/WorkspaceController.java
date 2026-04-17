@@ -1,5 +1,6 @@
 package com.example.coworking.controller;
 
+import com.example.coworking.cache.BookingSearchCache;
 import com.example.coworking.dto.WorkspaceDto;
 import com.example.coworking.service.WorkspaceService;
 import jakarta.validation.Valid;
@@ -27,23 +28,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class WorkspaceController {
 
   private final WorkspaceService workspaceService;
+  private final BookingSearchCache searchCache;
 
   @GetMapping("/paged")
   public ResponseEntity<Page<WorkspaceDto>> getAllWorkspaces(
       @PageableDefault(size = 20, sort = "number") Pageable pageable) {
     return ResponseEntity.ok(workspaceService.getAllWorkspaces(pageable));
-  }
-
-  @GetMapping("/by-amenities")
-  public ResponseEntity<Page<WorkspaceDto>> getWorkspacesByAmenities(
-      @RequestParam(required = false) Integer minCapacity,
-      @RequestParam(required = false) Double maxPrice,
-      @RequestParam List<Long> amenityIds,
-      @PageableDefault(size = 20, sort = "pricePerHour") Pageable pageable) {
-
-    Page<WorkspaceDto> workspaces = workspaceService.findWorkspacesByAmenities(
-        minCapacity, maxPrice, amenityIds, pageable);
-    return ResponseEntity.ok(workspaces);
   }
 
   @GetMapping("/{id}")
@@ -56,6 +46,7 @@ public class WorkspaceController {
   public ResponseEntity<WorkspaceDto> createWorkspace(
       @Valid @RequestBody WorkspaceDto workspaceDto) {
     WorkspaceDto createdWorkspace = workspaceService.createWorkspace(workspaceDto);
+    searchCache.clear();
     return new ResponseEntity<>(createdWorkspace, HttpStatus.CREATED);
   }
 
@@ -63,6 +54,7 @@ public class WorkspaceController {
   public ResponseEntity<WorkspaceDto> updateWorkspace(@PathVariable Long id,
       @Valid @RequestBody WorkspaceDto workspaceDto) {
     WorkspaceDto updatedWorkspace = workspaceService.updateWorkspace(id, workspaceDto);
+    searchCache.clear();
     return ResponseEntity.ok(updatedWorkspace);
   }
 
@@ -70,6 +62,7 @@ public class WorkspaceController {
   public ResponseEntity<WorkspaceDto> partialUpdateWorkspace(@PathVariable Long id,
       @RequestBody WorkspaceDto workspaceDto) {
     WorkspaceDto updatedWorkspace = workspaceService.partialUpdateWorkspace(id, workspaceDto);
+    searchCache.clear();
     return ResponseEntity.ok(updatedWorkspace);
   }
 
@@ -106,6 +99,7 @@ public class WorkspaceController {
   public ResponseEntity<WorkspaceDto> addAmenityToWorkspace(@PathVariable Long workspaceId,
       @PathVariable Long amenityId) {
     WorkspaceDto updatedWorkspace = workspaceService.addAmenityToWorkspace(workspaceId, amenityId);
+    searchCache.clear();
     return ResponseEntity.ok(updatedWorkspace);
   }
 

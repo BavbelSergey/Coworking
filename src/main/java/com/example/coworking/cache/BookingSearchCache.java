@@ -1,38 +1,32 @@
 package com.example.coworking.cache;
 
-import com.example.coworking.dto.WorkspaceDto;
+import com.example.coworking.dto.BookingDto;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WorkspaceSearchCache {
+public class BookingSearchCache {
 
-  private final Map<WorkspaceSearchKey, Page<WorkspaceDto>> cache = new HashMap<>();
+  private final Map<BookingSearchKey, Page<BookingDto>> cache = new HashMap<>();
 
-  public Page<WorkspaceDto> get(List<Long> amenityIds,
+  public Page<BookingDto> get(Long userId,
       Pageable pageable) {
-    WorkspaceSearchKey key = new WorkspaceSearchKey(amenityIds, pageable);
+    BookingSearchKey key = new BookingSearchKey(userId, pageable);
 
     return cache.get(key);
   }
 
-  public void put(List<Long> amenityIds, Pageable pageable,
-      Page<WorkspaceDto> result) {
-    WorkspaceSearchKey key = new WorkspaceSearchKey(amenityIds, pageable);
+  public void put(Long userId, Pageable pageable,
+      Page<BookingDto> result) {
+    BookingSearchKey key = new BookingSearchKey(userId, pageable);
     cache.put(key, result);
   }
 
   public void clear() {
     cache.clear();
-  }
-
-  public void evict(List<Long> amenityIds, org.springframework.data.domain.Pageable pageable) {
-    WorkspaceSearchKey key = new WorkspaceSearchKey(amenityIds, pageable);
-    cache.remove(key);
   }
 
   public int size() {

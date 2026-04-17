@@ -1,5 +1,6 @@
 package com.example.coworking.service;
 
+import com.example.coworking.cache.BookingSearchCache;
 import com.example.coworking.dto.BookingCreateDto;
 import com.example.coworking.dto.BookingDto;
 import com.example.coworking.dto.BookingUpdateDto;
@@ -14,11 +15,13 @@ import com.example.coworking.repository.WorkspaceRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -28,9 +31,38 @@ public class BookingService {
   private final UserRepository userRepository;
   private final WorkspaceRepository workspaceRepository;
   private final BookingMapper bookingMapper;
+  private final BookingSearchCache bookingCache;
 
   public Page<BookingDto> getAllBookings(Pageable pageable) {
     return bookingRepository.findAll(pageable).map(bookingMapper::toDto);
+  }
+
+  public Page<BookingDto> getUserBookings(Long userId, Pageable pageable) {
+    Page<BookingDto> cachedBookings = bookingCache.get(userId, pageable);
+    if (cachedBookings == null) {
+
+      Page<Booking> bookingsPage = bookingRepository.findBookingsByUserId(userId, pageable);
+      Page<BookingDto> result = bookingsPage.map(bookingMapper::toDto);
+      bookingCache.put(userId, pageable, result);
+      log.info("Заказы занесены в кеш");
+      return result;
+    }
+    log.info("Заказы получены из кеша");
+    return cachedBookings;
+  }
+
+  public Page<BookingDto> getUserBookingsNative(Long userId, Pageable pageable) {
+    Page<BookingDto> cachedBookings = bookingCache.get(userId, pageable);
+    if (cachedBookings == null) {
+
+      Page<Booking> bookingsPage = bookingRepository.findBookingsByUserIdNative(userId, pageable);
+      Page<BookingDto> result = bookingsPage.map(bookingMapper::toDto);
+      bookingCache.put(userId, pageable, result);
+      log.info("Заказы сохранены в кеш");
+      return result;
+    }
+    log.info("Заказы загружены из кеша");
+    return cachedBookings;
   }
 
   public BookingDto getBookingById(Long id) {
@@ -65,6 +97,7 @@ public class BookingService {
     Booking booking = bookingMapper.toEntity(createDto, user, workspace);
     Booking savedBooking = bookingRepository.save(booking);
 
+    bookingCache.clear();
     return bookingMapper.toDto(savedBooking);
   }
 
@@ -99,8 +132,10 @@ public class BookingService {
     }
 
     bookingMapper.updateEntity(updateDto, booking);
+    bookingCache.clear();
     Booking updatedBooking = bookingRepository.save(booking);
 
+    bookingCache.clear();
     return bookingMapper.toDto(updatedBooking);
   }
 
@@ -123,6 +158,7 @@ public class BookingService {
 
     booking.setStatus(BookingStatus.CANCELLED);
     Booking cancelledBooking = bookingRepository.save(booking);
+    bookingCache.clear();
 
     return bookingMapper.toDto(cancelledBooking);
   }
@@ -132,14 +168,8 @@ public class BookingService {
     Booking booking = bookingRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
 
+    bookingCache.clear();
     bookingRepository.delete(booking);
-  }
-
-  public List<BookingDto> getUserBookings(Long userId) {
-    if (!userRepository.existsById(userId)) {
-      throw new RuntimeException("User not found with id: " + userId);
-    }
-    return bookingMapper.toDtoList(bookingRepository.findByUserId(userId));
   }
 
   public List<BookingDto> getWorkspaceBookings(Long workspaceId) {
@@ -179,6 +209,7 @@ public class BookingService {
         bookingRepository.save(booking);
       }
     }
+    bookingCache.clear();
   }
 
   public List<BookingDto> getBookingsByStatus(String status) {

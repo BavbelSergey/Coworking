@@ -18,14 +18,4 @@ public class WorkspaceDto {
   private Integer capacity;
   private BigDecimal pricePerHour;
   private List<AmenityDto> amenities;
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @Builder
-  public static class AmenityDto {
-
-    private Long id;
-    private String name;
-  }
 }

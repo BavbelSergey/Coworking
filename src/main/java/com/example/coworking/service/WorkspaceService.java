@@ -1,5 +1,6 @@
 package com.example.coworking.service;
 
+import com.example.coworking.dto.AmenityDto;
 import com.example.coworking.dto.WorkspaceDto;
 import com.example.coworking.mapper.WorkspaceMapper;
 import com.example.coworking.model.Amenity;
@@ -29,21 +30,6 @@ public class WorkspaceService {
     return workspaceRepository.findAll(pageable).map(workspaceMapper::toDto);
   }
 
-  public Page<WorkspaceDto> findWorkspacesByAmenities(Integer minCapacity, Double maxPrice,
-      List<Long> amenityIds, Pageable pageable) {
-
-    if (amenityIds == null || amenityIds.isEmpty()) {
-      throw new IllegalArgumentException("At least one amenity must be specified");
-    }
-
-    BigDecimal maxPriceDecimal = maxPrice != null ? BigDecimal.valueOf(maxPrice) : null;
-
-    Page<Workspace> workspaces = workspaceRepository.findByAmenitiesAndFilters(minCapacity,
-        maxPriceDecimal, amenityIds, pageable);
-
-    return workspaces.map(workspaceMapper::toDto);
-  }
-
   public WorkspaceDto getWorkspaceById(Long id) {
     Workspace workspace = workspaceRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Workspace not found with id: " + id));
@@ -61,7 +47,7 @@ public class WorkspaceService {
 
     if (workspaceDto.getAmenities() != null && !workspaceDto.getAmenities().isEmpty()) {
       List<Long> amenityIds = workspaceDto.getAmenities().stream()
-          .map(WorkspaceDto.AmenityDto::getId).collect(Collectors.toList());
+          .map(AmenityDto::getId).collect(Collectors.toList());
       List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
       workspace.setAmenities(amenities);
     }
@@ -91,7 +77,7 @@ public class WorkspaceService {
   private WorkspaceDto getWorkspaceDto(WorkspaceDto workspaceDto, Workspace workspace) {
     if (workspaceDto.getAmenities() != null) {
       List<Long> amenityIds = workspaceDto.getAmenities().stream()
-          .map(WorkspaceDto.AmenityDto::getId).collect(Collectors.toList());
+          .map(AmenityDto::getId).collect(Collectors.toList());
       List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
       workspace.setAmenities(amenities);
     }

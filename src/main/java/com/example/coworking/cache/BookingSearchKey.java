@@ -1,19 +1,18 @@
 package com.example.coworking.cache;
 
-import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import org.springframework.data.domain.Pageable;
 
 @Getter
-public class WorkspaceSearchKey {
+public class BookingSearchKey {
 
-  private final List<Long> amenityIds;
+  private final Long userId;
   private final int page;
   private final int size;
 
-  public WorkspaceSearchKey(List<Long> amenityIds, Pageable pageable) {
-    this.amenityIds = amenityIds != null ? List.copyOf(amenityIds) : null;
+  public BookingSearchKey(Long userId, Pageable pageable) {
+    this.userId = userId;
     this.page = pageable.getPageNumber();
     this.size = pageable.getPageSize();
   }
@@ -26,19 +25,12 @@ public class WorkspaceSearchKey {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    WorkspaceSearchKey that = (WorkspaceSearchKey) o;
-    return page == that.page && size == that.size && Objects.equals(amenityIds, that.amenityIds);
+    BookingSearchKey that = (BookingSearchKey) o;
+    return page == that.page && size == that.size && this.userId.equals(that.userId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(amenityIds, page, size);
+    return Objects.hash(userId, page, size);
   }
-
-  @Override
-  public String toString() {
-    return "WorkspaceByAmenitiesKey{" + "amenityIds=" + amenityIds + ", page=" + page + ", size="
-        + size + ", sort='" + '\'' + '}';
-  }
-
 }

@@ -31,6 +31,24 @@ public class BookingController {
 
   private final BookingService bookingService;
 
+  @GetMapping("/user/{userId}")
+  public ResponseEntity<Page<BookingDto>> getUserBookings(
+      @PathVariable Long userId,
+      @PageableDefault(size = 10, sort = "startTime") Pageable pageable
+  ) {
+    Page<BookingDto> bookings = bookingService.getUserBookings(userId, pageable);
+    return ResponseEntity.ok(bookings);
+  }
+
+  @GetMapping("/user-native/{userId}")
+  public ResponseEntity<Page<BookingDto>> getUserBookingsNative(
+      @PathVariable Long userId,
+      @PageableDefault(size = 10, sort = "start_Time") Pageable pageable
+  ) {
+    Page<BookingDto> bookings = bookingService.getUserBookingsNative(userId, pageable);
+    return ResponseEntity.ok(bookings);
+  }
+
   @GetMapping("/paged")
   public ResponseEntity<Page<BookingDto>> getAllBookings(
       @PageableDefault(size = 20, sort = "status") Pageable pageable) {
@@ -72,12 +90,6 @@ public class BookingController {
   public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
     bookingService.deleteBooking(id);
     return ResponseEntity.noContent().build();
-  }
-
-  @GetMapping("/user/{userId}")
-  public ResponseEntity<List<BookingDto>> getUserBookings(@PathVariable Long userId) {
-    List<BookingDto> bookings = bookingService.getUserBookings(userId);
-    return ResponseEntity.ok(bookings);
   }
 
   @GetMapping("/workspace/{workspaceId}")

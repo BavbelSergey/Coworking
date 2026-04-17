@@ -1,7 +1,7 @@
 package com.example.coworking.mapper;
 
 import com.example.coworking.dto.WorkspaceDto;
-import com.example.coworking.dto.WorkspaceDto.AmenityDto;
+import com.example.coworking.dto.AmenityDto;
 import com.example.coworking.model.Amenity;
 import com.example.coworking.model.Workspace;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class WorkspaceMapper {
         .toList();
   }
 
-  private List<WorkspaceDto.AmenityDto> mapAmenitiesToDto(List<Amenity> amenities) {
+  private List<AmenityDto> mapAmenitiesToDto(List<Amenity> amenities) {
     if (amenities == null) {
       return new ArrayList<>();
     }
@@ -72,12 +72,12 @@ public class WorkspaceMapper {
         .toList();
   }
 
-  private WorkspaceDto.AmenityDto mapAmenityToDto(Amenity amenity) {
+  private AmenityDto mapAmenityToDto(Amenity amenity) {
     if (amenity == null) {
       return new AmenityDto();
     }
 
-    return WorkspaceDto.AmenityDto.builder()
+    return AmenityDto.builder()
         .id(amenity.getId())
         .name(amenity.getName())
         .build();
