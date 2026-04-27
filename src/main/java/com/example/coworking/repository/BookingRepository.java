@@ -68,9 +68,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
   List<Booking> findByWorkspaceId(Long workspaceId);
 
   @EntityGraph(attributePaths = {"user", "workspace", "payment"})
-  List<Booking> findByStatus(BookingStatus status);
-
-  @EntityGraph(attributePaths = {"user", "workspace", "payment"})
   List<Booking> findByUserIdAndStatus(Long userId, BookingStatus status);
 
   @EntityGraph(attributePaths = {"user", "workspace"})
@@ -79,18 +76,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       + "AND ((b.startTime <= :endTime AND b.endTime >= :startTime))")
   List<Booking> findConflictingBookings(@Param("workspaceId") Long workspaceId,
       @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
-
-  @EntityGraph(attributePaths = {"user", "workspace"})
-  List<Booking> findByStartTimeBetween(LocalDateTime start, LocalDateTime end);
-
-  @EntityGraph(attributePaths = {"user", "workspace"})
-  @Query("SELECT b FROM Booking b WHERE b.user.id = :userId "
-      + "AND b.startTime > :now AND b.status != 'CANCELLED' " + "ORDER BY b.startTime ASC")
-  List<Booking> findUpcomingBookings(@Param("userId") Long userId, @Param("now") LocalDateTime now);
-
-  @EntityGraph(attributePaths = {"user", "workspace"})
-  @Query("SELECT b FROM Booking b WHERE b.user.id = :userId "
-      + "AND b.endTime < :now ORDER BY b.endTime DESC")
-  List<Booking> findPastBookings(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
 }

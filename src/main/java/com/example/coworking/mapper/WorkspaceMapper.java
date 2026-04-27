@@ -1,7 +1,7 @@
 package com.example.coworking.mapper;
 
-import com.example.coworking.dto.WorkspaceDto;
 import com.example.coworking.dto.AmenityDto;
+import com.example.coworking.dto.WorkspaceDto;
 import com.example.coworking.model.Amenity;
 import com.example.coworking.model.Workspace;
 import java.util.ArrayList;
@@ -16,13 +16,9 @@ public class WorkspaceMapper {
       return null;
     }
 
-    return WorkspaceDto.builder()
-        .id(workspace.getId())
-        .number(workspace.getNumber())
-        .capacity(workspace.getCapacity())
-        .pricePerHour(workspace.getPricePerHour())
-        .amenities(mapAmenitiesToDto(workspace.getAmenities()))
-        .build();
+    return WorkspaceDto.builder().id(workspace.getId()).number(workspace.getNumber())
+        .capacity(workspace.getCapacity()).pricePerHour(workspace.getPricePerHour())
+        .amenities(mapAmenitiesToDto(workspace.getAmenities())).build();
   }
 
   public Workspace toEntity(WorkspaceDto dto) {
@@ -30,12 +26,8 @@ public class WorkspaceMapper {
       return null;
     }
 
-    return Workspace.builder()
-        .id(dto.getId())
-        .number(dto.getNumber())
-        .capacity(dto.getCapacity())
-        .pricePerHour(dto.getPricePerHour())
-        .build();
+    return Workspace.builder().id(dto.getId()).number(dto.getNumber()).capacity(dto.getCapacity())
+        .pricePerHour(dto.getPricePerHour()).build();
   }
 
   public void updateEntity(WorkspaceDto dto, Workspace workspace) {
@@ -58,18 +50,14 @@ public class WorkspaceMapper {
     if (workspaces == null) {
       return new ArrayList<>();
     }
-    return workspaces.stream()
-        .map(this::toDto)
-        .toList();
+    return workspaces.stream().map(this::toDto).toList();
   }
 
   private List<AmenityDto> mapAmenitiesToDto(List<Amenity> amenities) {
     if (amenities == null) {
       return new ArrayList<>();
     }
-    return amenities.stream()
-        .map(this::mapAmenityToDto)
-        .toList();
+    return amenities.stream().map(this::mapAmenityToDto).toList();
   }
 
   private AmenityDto mapAmenityToDto(Amenity amenity) {
@@ -77,9 +65,6 @@ public class WorkspaceMapper {
       return new AmenityDto();
     }
 
-    return AmenityDto.builder()
-        .id(amenity.getId())
-        .name(amenity.getName())
-        .build();
+    return AmenityDto.builder().id(amenity.getId()).name(amenity.getName()).build();
   }
 }

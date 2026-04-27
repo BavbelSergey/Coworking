@@ -3,6 +3,9 @@ package com.example.coworking.service;
 import com.example.coworking.dto.UserCreateDto;
 import com.example.coworking.dto.UserDto;
 import com.example.coworking.dto.UserUpdateDto;
+import com.example.coworking.exception.ConflictException;
+import com.example.coworking.exception.ErrorCode;
+import com.example.coworking.exception.NotFoundException;
 import com.example.coworking.mapper.UserMapper;
 import com.example.coworking.model.User;
 import com.example.coworking.repository.UserRepository;
@@ -27,24 +30,24 @@ public class UserService {
 
   public UserDto getUserById(Long id) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
     return userMapper.toDto(user);
   }
 
   public UserDto getUserByEmail(String email) {
     User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
     return userMapper.toDto(user);
   }
 
   @Transactional
   public UserDto createUser(UserCreateDto createDto) {
     if (userRepository.existsByEmail(createDto.getEmail())) {
-      throw new RuntimeException("User with email " + createDto.getEmail() + " already exists");
+      throw new ConflictException(ErrorCode.USER_EXISTS_WITH_EMAIL);
     }
 
     if (createDto.getPhone() != null && userRepository.existsByPhone(createDto.getPhone())) {
-      throw new RuntimeException("User with phone " + createDto.getPhone() + " already exists");
+      throw new ConflictException(ErrorCode.USER_EXISTS_WITH_PHONE);
     }
 
     User user = userMapper.toEntity(createDto);
@@ -55,17 +58,17 @@ public class UserService {
   @Transactional
   public UserDto updateUser(Long id, UserUpdateDto updateDto) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
     if (updateDto.getEmail() != null && !updateDto.getEmail().equals(user.getEmail())) {
       if (userRepository.existsByEmail(updateDto.getEmail())) {
-        throw new RuntimeException("User with email " + updateDto.getEmail() + " already exists");
+        throw new ConflictException(ErrorCode.USER_EXISTS_WITH_EMAIL);
       }
     }
 
     if (updateDto.getPhone() != null && !updateDto.getPhone().equals(user.getPhone())
         && userRepository.existsByPhone(updateDto.getPhone())) {
-      throw new RuntimeException("User with phone " + updateDto.getPhone() + " already exists");
+      throw new ConflictException(ErrorCode.USER_EXISTS_WITH_PHONE);
     }
 
     userMapper.updateEntity(updateDto, user);
@@ -76,13 +79,13 @@ public class UserService {
   @Transactional
   public void deleteUser(Long id) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
     boolean hasActiveBookings = user.getBookings().stream()
         .anyMatch(booking -> booking.getStatus().name().equals("PENDING"));
 
     if (hasActiveBookings) {
-      throw new RuntimeException("Cannot delete user with active bookings");
+      throw new ConflictException(ErrorCode.USER_HAS_ACTIVE_BOOKINGS);
     }
 
     userRepository.delete(user);

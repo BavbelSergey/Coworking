@@ -23,8 +23,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
   @EntityGraph(attributePaths = {"booking", "booking.user", "booking.workspace"})
   Page<Payment> findAll(@org.jspecify.annotations.NonNull Pageable pageable);
 
-  List<Payment> findByDateBetween(LocalDateTime start, LocalDateTime end);
-
   List<Payment> findByPaymentMethod(String paymentMethod);
 
   @EntityGraph(attributePaths = {"booking", "booking.user", "booking.workspace"})

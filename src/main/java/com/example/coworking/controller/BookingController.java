@@ -5,13 +5,11 @@ import com.example.coworking.dto.BookingDto;
 import com.example.coworking.dto.BookingUpdateDto;
 import com.example.coworking.service.BookingService;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,19 +29,15 @@ public class BookingController {
   private final BookingService bookingService;
 
   @GetMapping("/user/{userId}")
-  public ResponseEntity<Page<BookingDto>> getUserBookings(
-      @PathVariable Long userId,
-      @PageableDefault(size = 10, sort = "startTime") Pageable pageable
-  ) {
+  public ResponseEntity<Page<BookingDto>> getUserBookings(@PathVariable Long userId,
+      @PageableDefault(sort = "startTime") Pageable pageable) {
     Page<BookingDto> bookings = bookingService.getUserBookings(userId, pageable);
     return ResponseEntity.ok(bookings);
   }
 
   @GetMapping("/user-native/{userId}")
-  public ResponseEntity<Page<BookingDto>> getUserBookingsNative(
-      @PathVariable Long userId,
-      @PageableDefault(size = 10, sort = "start_Time") Pageable pageable
-  ) {
+  public ResponseEntity<Page<BookingDto>> getUserBookingsNative(@PathVariable Long userId,
+      @PageableDefault(sort = "start_Time") Pageable pageable) {
     Page<BookingDto> bookings = bookingService.getUserBookingsNative(userId, pageable);
     return ResponseEntity.ok(bookings);
   }
@@ -102,52 +95,5 @@ public class BookingController {
   public ResponseEntity<List<BookingDto>> getUserActiveBookings(@PathVariable Long userId) {
     List<BookingDto> bookings = bookingService.getUserActiveBookings(userId);
     return ResponseEntity.ok(bookings);
-  }
-
-  @GetMapping("/user/{userId}/upcoming")
-  public ResponseEntity<List<BookingDto>> getUserUpcomingBookings(@PathVariable Long userId) {
-    List<BookingDto> bookings = bookingService.getUserUpcomingBookings(userId);
-    return ResponseEntity.ok(bookings);
-  }
-
-  @GetMapping("/user/{userId}/past")
-  public ResponseEntity<List<BookingDto>> getUserPastBookings(@PathVariable Long userId) {
-    List<BookingDto> bookings = bookingService.getUserPastBookings(userId);
-    return ResponseEntity.ok(bookings);
-  }
-
-  @GetMapping("/available")
-  public ResponseEntity<Boolean> checkAvailability(@RequestParam Long workspaceId,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-    boolean isAvailable = bookingService.isWorkspaceAvailable(workspaceId, start, end);
-    return ResponseEntity.ok(isAvailable);
-  }
-
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<BookingDto>> getBookingsByStatus(@PathVariable String status) {
-    List<BookingDto> bookings = bookingService.getBookingsByStatus(status);
-    return ResponseEntity.ok(bookings);
-  }
-
-  @GetMapping("/period")
-  public ResponseEntity<List<BookingDto>> getBookingsInPeriod(
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-    List<BookingDto> bookings = bookingService.getBookingsInPeriod(start, end);
-
-    return ResponseEntity.ok(bookings);
-  }
-
-  @GetMapping("/{id}/cost")
-  public ResponseEntity<Double> calculateBookingCost(@PathVariable Long id) {
-    double cost = bookingService.calculateBookingCost(id);
-    return ResponseEntity.ok(cost);
-  }
-
-  @PostMapping("/complete-expired")
-  public ResponseEntity<String> completeExpiredBookings() {
-    bookingService.completeExpiredBookings();
-    return ResponseEntity.ok("Expired bookings have been completed");
   }
 }

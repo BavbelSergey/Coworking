@@ -23,8 +23,7 @@ public class AmenityService {
   private final AmenityMapper amenityMapper;
 
   public Page<AmenityDto> getAllAmenities(Pageable pageable) {
-    return amenityRepository.findAll(pageable)
-        .map(amenityMapper::toDto);
+    return amenityRepository.findAll(pageable).map(amenityMapper::toDto);
   }
 
   public AmenityDto getAmenityById(Long id) {

@@ -55,8 +55,7 @@ public class PaymentController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<PaymentDto> updatePayment(
-      @PathVariable Long id,
+  public ResponseEntity<PaymentDto> updatePayment(@PathVariable Long id,
       @Valid @RequestBody PaymentUpdateDto updateDto) {
     PaymentDto updatedPayment = paymentService.updatePayment(id, updateDto);
     return ResponseEntity.ok(updatedPayment);
@@ -82,13 +81,6 @@ public class PaymentController {
   @GetMapping("/workspace/{workspaceId}")
   public ResponseEntity<List<PaymentDto>> getWorkspacePayments(@PathVariable Long workspaceId) {
     return ResponseEntity.ok(paymentService.getWorkspacePayments(workspaceId));
-  }
-
-  @GetMapping("/period")
-  public ResponseEntity<List<PaymentDto>> getPaymentsInPeriod(
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-    return ResponseEntity.ok(paymentService.getPaymentsInPeriod(start, end));
   }
 
   @GetMapping("/method/{method}")

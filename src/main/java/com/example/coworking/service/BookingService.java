@@ -4,6 +4,8 @@ import com.example.coworking.cache.BookingSearchCache;
 import com.example.coworking.dto.BookingCreateDto;
 import com.example.coworking.dto.BookingDto;
 import com.example.coworking.dto.BookingUpdateDto;
+import com.example.coworking.exception.ErrorCode;
+import com.example.coworking.exception.NotFoundException;
 import com.example.coworking.mapper.BookingMapper;
 import com.example.coworking.model.Booking;
 import com.example.coworking.model.BookingStatus;
@@ -67,7 +69,7 @@ public class BookingService {
 
   public BookingDto getBookingById(Long id) {
     Booking booking = bookingRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
     return bookingMapper.toDto(booking);
   }
 
@@ -142,7 +144,7 @@ public class BookingService {
   @Transactional
   public BookingDto cancelBooking(Long id) {
     Booking booking = bookingRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
 
     if (booking.getStatus() == BookingStatus.COMPLETED) {
       throw new RuntimeException("Cannot cancel completed booking");
@@ -166,7 +168,7 @@ public class BookingService {
   @Transactional
   public void deleteBooking(Long id) {
     Booking booking = bookingRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
 
     bookingCache.clear();
     bookingRepository.delete(booking);
@@ -174,7 +176,7 @@ public class BookingService {
 
   public List<BookingDto> getWorkspaceBookings(Long workspaceId) {
     if (!workspaceRepository.existsById(workspaceId)) {
-      throw new RuntimeException("Workspace not found with id: " + workspaceId);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
     }
     return bookingMapper.toDtoList(bookingRepository.findByWorkspaceId(workspaceId));
   }
@@ -184,54 +186,10 @@ public class BookingService {
         bookingRepository.findByUserIdAndStatus(userId, BookingStatus.PENDING));
   }
 
-  public List<BookingDto> getUserUpcomingBookings(Long userId) {
-    return bookingMapper.toDtoList(
-        bookingRepository.findUpcomingBookings(userId, LocalDateTime.now()));
-  }
-
-  public List<BookingDto> getUserPastBookings(Long userId) {
-    return bookingMapper.toDtoList(bookingRepository.findPastBookings(userId, LocalDateTime.now()));
-  }
-
-  public boolean isWorkspaceAvailable(Long workspaceId, LocalDateTime start, LocalDateTime end) {
-    List<Booking> conflicting = bookingRepository.findConflictingBookings(workspaceId, start, end);
-    return conflicting.isEmpty();
-  }
-
-  @Transactional
-  public void completeExpiredBookings() {
-    LocalDateTime now = LocalDateTime.now();
-    List<Booking> activeBookings = bookingRepository.findByStatus(BookingStatus.PENDING);
-
-    for (Booking booking : activeBookings) {
-      if (booking.getEndTime().isBefore(now)) {
-        booking.setStatus(BookingStatus.COMPLETED);
-        bookingRepository.save(booking);
-      }
-    }
-    bookingCache.clear();
-  }
-
-  public List<BookingDto> getBookingsByStatus(String status) {
-    try {
-      BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
-      return bookingMapper.toDtoList(bookingRepository.findByStatus(bookingStatus));
-    } catch (IllegalArgumentException e) {
-      throw new RuntimeException("Invalid status: " + status);
-    }
-  }
-
-  public List<BookingDto> getBookingsInPeriod(LocalDateTime start, LocalDateTime end) {
-    if (start.isAfter(end)) {
-      throw new RuntimeException("Start time must be before end time");
-    }
-    return bookingMapper.toDtoList(bookingRepository.findByStartTimeBetween(start, end));
-  }
-
   @Transactional
   public BookingDto confirmBooking(Long id) {
     Booking booking = bookingRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
 
     if (booking.getStatus() != BookingStatus.PENDING) {
       throw new RuntimeException("Only pending bookings can be confirmed");
@@ -241,21 +199,5 @@ public class BookingService {
     Booking confirmedBooking = bookingRepository.save(booking);
 
     return bookingMapper.toDto(confirmedBooking);
-  }
-
-  public double calculateBookingCost(Long id) {
-    Booking booking = bookingRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
-
-    if (booking.getWorkspace() == null || booking.getWorkspace().getPricePerHour() == null) {
-      throw new RuntimeException("Cannot calculate cost: workspace or price is missing");
-    }
-
-    long hours = java.time.Duration.between(booking.getStartTime(), booking.getEndTime()).toHours();
-    if (hours == 0) {
-      hours = 1;
-    }
-
-    return hours * booking.getWorkspace().getPricePerHour().doubleValue();
   }
 }

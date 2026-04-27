@@ -3,6 +3,9 @@ package com.example.coworking.service;
 import com.example.coworking.dto.PaymentCreateDto;
 import com.example.coworking.dto.PaymentDto;
 import com.example.coworking.dto.PaymentUpdateDto;
+import com.example.coworking.exception.ConflictException;
+import com.example.coworking.exception.ErrorCode;
+import com.example.coworking.exception.NotFoundException;
 import com.example.coworking.mapper.PaymentMapper;
 import com.example.coworking.model.Booking;
 import com.example.coworking.model.Payment;
@@ -29,27 +32,25 @@ public class PaymentService {
     return paymentRepository.findAll(pageable).map(paymentMapper::toDto);
   }
 
-
   public PaymentDto getPaymentById(Long id) {
     Payment payment = paymentRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.PAYMENT_NOT_FOUND));
     return paymentMapper.toDto(payment);
   }
 
   public PaymentDto getPaymentByBookingId(Long bookingId) {
     Payment payment = paymentRepository.findByBookingId(bookingId)
-        .orElseThrow(() -> new RuntimeException("Payment not found for booking id: " + bookingId));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.PAYMENT_NOT_FOUND));
     return paymentMapper.toDto(payment);
   }
 
   @Transactional
   public PaymentDto createPayment(PaymentCreateDto createDto) {
-    Booking booking = bookingRepository.findById(createDto.getBookingId()).orElseThrow(
-        () -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
+    Booking booking = bookingRepository.findById(createDto.getBookingId())
+        .orElseThrow(() -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
 
     if (paymentRepository.existsByBookingId(createDto.getBookingId())) {
-      throw new RuntimeException(
-          "Payment already exists for booking id: " + createDto.getBookingId());
+      throw new ConflictException(ErrorCode.PAYMENT_EXISTS_FOR_BOOKING);
     }
 
     Payment payment = paymentMapper.toEntity(createDto, booking);
@@ -61,7 +62,7 @@ public class PaymentService {
   @Transactional
   public PaymentDto updatePayment(Long id, PaymentUpdateDto updateDto) {
     Payment payment = paymentRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.PAYMENT_NOT_FOUND));
 
     paymentMapper.updateEntity(updateDto, payment);
     Payment updatedPayment = paymentRepository.save(payment);
@@ -72,7 +73,7 @@ public class PaymentService {
   @Transactional
   public void deletePayment(Long id) {
     Payment payment = paymentRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.PAYMENT_NOT_FOUND));
 
     paymentRepository.delete(payment);
   }
@@ -80,7 +81,7 @@ public class PaymentService {
   @Transactional
   public void deletePaymentByBookingId(Long bookingId) {
     if (!paymentRepository.existsByBookingId(bookingId)) {
-      throw new RuntimeException("Payment not found for booking id: " + bookingId);
+      throw new NotFoundException(ErrorCode.PAYMENT_NOT_FOUND);
     }
     paymentRepository.deleteByBookingId(bookingId);
   }
@@ -91,13 +92,6 @@ public class PaymentService {
 
   public List<PaymentDto> getWorkspacePayments(Long workspaceId) {
     return paymentMapper.toDtoList(paymentRepository.findByWorkspaceId(workspaceId));
-  }
-
-  public List<PaymentDto> getPaymentsInPeriod(LocalDateTime start, LocalDateTime end) {
-    if (start.isAfter(end)) {
-      throw new RuntimeException("Start time must be before end time");
-    }
-    return paymentMapper.toDtoList(paymentRepository.findByDateBetween(start, end));
   }
 
   public List<PaymentDto> getPaymentsByMethod(String method) {

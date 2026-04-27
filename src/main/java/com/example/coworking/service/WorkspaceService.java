@@ -2,6 +2,9 @@ package com.example.coworking.service;
 
 import com.example.coworking.dto.AmenityDto;
 import com.example.coworking.dto.WorkspaceDto;
+import com.example.coworking.exception.ConflictException;
+import com.example.coworking.exception.ErrorCode;
+import com.example.coworking.exception.NotFoundException;
 import com.example.coworking.mapper.WorkspaceMapper;
 import com.example.coworking.model.Amenity;
 import com.example.coworking.model.BookingStatus;
@@ -32,22 +35,21 @@ public class WorkspaceService {
 
   public WorkspaceDto getWorkspaceById(Long id) {
     Workspace workspace = workspaceRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Workspace not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND));
     return workspaceMapper.toDto(workspace);
   }
 
   @Transactional
   public WorkspaceDto createWorkspace(WorkspaceDto workspaceDto) {
     if (workspaceRepository.existsByNumber(workspaceDto.getNumber())) {
-      throw new RuntimeException(
-          "Workspace with number " + workspaceDto.getNumber() + " already exists");
+      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER);
     }
 
     Workspace workspace = workspaceMapper.toEntity(workspaceDto);
 
     if (workspaceDto.getAmenities() != null && !workspaceDto.getAmenities().isEmpty()) {
-      List<Long> amenityIds = workspaceDto.getAmenities().stream()
-          .map(AmenityDto::getId).collect(Collectors.toList());
+      List<Long> amenityIds = workspaceDto.getAmenities().stream().map(AmenityDto::getId)
+          .collect(Collectors.toList());
       List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
       workspace.setAmenities(amenities);
     }
@@ -59,12 +61,11 @@ public class WorkspaceService {
   @Transactional
   public WorkspaceDto updateWorkspace(Long id, WorkspaceDto workspaceDto) {
     Workspace workspace = workspaceRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Workspace not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND));
 
     if (!workspace.getNumber().equals(workspaceDto.getNumber())
         && workspaceRepository.existsByNumber(workspaceDto.getNumber())) {
-      throw new RuntimeException(
-          "Workspace with number " + workspaceDto.getNumber() + " already exists");
+      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER);
     }
 
     workspace.setNumber(workspaceDto.getNumber());
@@ -76,8 +77,7 @@ public class WorkspaceService {
 
   private WorkspaceDto getWorkspaceDto(WorkspaceDto workspaceDto, Workspace workspace) {
     if (workspaceDto.getAmenities() != null) {
-      List<Long> amenityIds = workspaceDto.getAmenities().stream()
-          .map(AmenityDto::getId).collect(Collectors.toList());
+      List<Long> amenityIds = workspaceDto.getAmenities().stream().map(AmenityDto::getId).toList();
       List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
       workspace.setAmenities(amenities);
     }
@@ -89,14 +89,12 @@ public class WorkspaceService {
   @Transactional
   public WorkspaceDto partialUpdateWorkspace(Long id, WorkspaceDto workspaceDto) {
     Workspace workspace = workspaceRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Workspace not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND));
 
     if (workspaceDto.getNumber() != null && !workspace.getNumber().equals(workspaceDto.getNumber())
         && workspaceRepository.existsByNumber(workspaceDto.getNumber())) {
-      throw new RuntimeException(
-          "Workspace with number " + workspaceDto.getNumber() + " already exists");
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
     }
-
     workspaceMapper.updateEntity(workspaceDto, workspace);
 
     return workspaceMapper.toDto(workspace);
@@ -105,13 +103,13 @@ public class WorkspaceService {
   @Transactional
   public void deleteWorkspace(Long id) {
     Workspace workspace = workspaceRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Workspace not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND));
 
     boolean hasActiveBookings = workspace.getBookings() != null && workspace.getBookings().stream()
         .anyMatch(booking -> booking.getStatus() == BookingStatus.CONFIRMED);
 
     if (hasActiveBookings) {
-      throw new RuntimeException("Cannot delete workspace with active bookings");
+      throw new ConflictException(ErrorCode.WORKSPACE_HAS_ACTIVE_BOOKINGS);
     }
 
     workspaceRepository.delete(workspace);
@@ -147,10 +145,10 @@ public class WorkspaceService {
   @Transactional
   public WorkspaceDto addAmenityToWorkspace(Long workspaceId, Long amenityId) {
     Workspace workspace = workspaceRepository.findById(workspaceId)
-        .orElseThrow(() -> new RuntimeException("Workspace not found with id: " + workspaceId));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND));
 
     Amenity amenity = amenityRepository.findById(amenityId)
-        .orElseThrow(() -> new RuntimeException("Amenity not found with id: " + amenityId));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND));
 
     if (workspace.getAmenities() == null) {
       workspace.setAmenities(new java.util.ArrayList<>());
@@ -167,7 +165,7 @@ public class WorkspaceService {
   @Transactional
   public WorkspaceDto removeAmenityFromWorkspace(Long workspaceId, Long amenityId) {
     Workspace workspace = workspaceRepository.findById(workspaceId)
-        .orElseThrow(() -> new RuntimeException("Workspace not found with id: " + workspaceId));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND));
 
     if (workspace.getAmenities() != null) {
       workspace.getAmenities().removeIf(a -> a.getId().equals(amenityId));
@@ -184,13 +182,13 @@ public class WorkspaceService {
   @Transactional
   public void deleteByNumber(Integer number) {
     Workspace workspace = workspaceRepository.findByNumber(number)
-        .orElseThrow(() -> new RuntimeException("Workspace not found with number: " + number));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND));
 
     boolean hasActiveBookings = workspace.getBookings() != null && workspace.getBookings().stream()
         .anyMatch(booking -> booking.getStatus() == BookingStatus.CONFIRMED);
 
     if (hasActiveBookings) {
-      throw new RuntimeException("Cannot delete workspace with active bookings");
+      throw new NotFoundException(ErrorCode.WORKSPACE_HAS_ACTIVE_BOOKINGS);
     }
 
     workspaceRepository.deleteByNumber(number);
