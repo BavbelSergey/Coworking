@@ -29,14 +29,14 @@ public class BookingController {
 
   private final BookingService bookingService;
 
-  @GetMapping("/user/")
+  @GetMapping("/workspaces/")
   public ResponseEntity<Page<BookingDto>> getUserBookings(@RequestParam Long maxPrice,
       @RequestParam Long minCapacity, Pageable pageable) {
     Page<BookingDto> bookings = bookingService.getUserBookings(maxPrice, minCapacity, pageable);
     return ResponseEntity.ok(bookings);
   }
 
-  @GetMapping("/user-native/")
+  @GetMapping("/workspaces-native/")
   public ResponseEntity<Page<BookingDto>> getUserBookingsNative(@RequestParam Long maxPrice,
       @RequestParam Long minCapacity, Pageable pageable) {
     Page<BookingDto> bookings = bookingService.getUserBookingsNative(maxPrice, minCapacity,
