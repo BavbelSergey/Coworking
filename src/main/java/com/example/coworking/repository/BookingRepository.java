@@ -54,7 +54,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       LEFT JOIN workspaces w ON b.workspace_id = w.id
       LEFT JOIN payments p ON b.id = p.booking_id
       WHERE w.price_per_hour < :price
-        AND p.payment_method = :method
         AND w.capacity > :capacity
       """,
       nativeQuery = true)
