@@ -29,7 +29,7 @@ public class UserController {
 
   private final UserService userService;
 
-  @GetMapping("/paged")
+  @GetMapping
   public ResponseEntity<Page<UserDto>> getAllUsers(
       @PageableDefault(size = 20, sort = "name") Pageable pageable) {
     return ResponseEntity.ok(userService.getAllUsers(pageable));

@@ -30,18 +30,21 @@ public class BookingController {
   private final BookingService bookingService;
 
   @GetMapping("/user/")
-  public ResponseEntity<Page<BookingDto>> getUserBookings(@RequestParam Long price, @RequestParam Long capacity, Pageable pageable) {
-    Page<BookingDto> bookings = bookingService.getUserBookings(price, capacity, pageable);
+  public ResponseEntity<Page<BookingDto>> getUserBookings(@RequestParam Long maxPrice,
+      @RequestParam Long minCapacity, Pageable pageable) {
+    Page<BookingDto> bookings = bookingService.getUserBookings(maxPrice, minCapacity, pageable);
     return ResponseEntity.ok(bookings);
   }
 
   @GetMapping("/user-native/")
-  public ResponseEntity<Page<BookingDto>> getUserBookingsNative(@RequestParam Long price, @RequestParam Long capacity, Pageable pageable) {
-    Page<BookingDto> bookings = bookingService.getUserBookingsNative(price, capacity, pageable);
+  public ResponseEntity<Page<BookingDto>> getUserBookingsNative(@RequestParam Long maxPrice,
+      @RequestParam Long minCapacity, Pageable pageable) {
+    Page<BookingDto> bookings = bookingService.getUserBookingsNative(maxPrice, minCapacity,
+        pageable);
     return ResponseEntity.ok(bookings);
   }
 
-  @GetMapping("/paged")
+  @GetMapping
   public ResponseEntity<Page<BookingDto>> getAllBookings(
       @PageableDefault(size = 20, sort = "status") Pageable pageable) {
     return ResponseEntity.ok(bookingService.getAllBookings(pageable));

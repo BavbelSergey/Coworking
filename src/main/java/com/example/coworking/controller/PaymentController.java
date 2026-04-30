@@ -32,7 +32,7 @@ public class PaymentController {
 
   private final PaymentService paymentService;
 
-  @GetMapping("/paged")
+  @GetMapping
   public ResponseEntity<Page<PaymentDto>> getAllPaymentsPaged(
       @PageableDefault(size = 20, sort = "date", direction = Direction.DESC) Pageable pageable) {
     return ResponseEntity.ok(paymentService.getAllPayments(pageable));

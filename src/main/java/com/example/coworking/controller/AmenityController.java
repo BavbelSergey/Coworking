@@ -30,7 +30,7 @@ public class AmenityController {
 
   private final AmenityService amenityService;
 
-  @GetMapping("/paged")
+  @GetMapping
   public ResponseEntity<Page<AmenityDto>> getAllAmenities(
       @PageableDefault(size = 20, sort = "id") Pageable pageable) {
     return ResponseEntity.ok(amenityService.getAllAmenities(pageable));

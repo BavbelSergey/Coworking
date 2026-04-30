@@ -30,7 +30,7 @@ public class WorkspaceController {
   private final WorkspaceService workspaceService;
   private final BookingSearchCache searchCache;
 
-  @GetMapping("/paged")
+  @GetMapping
   public ResponseEntity<Page<WorkspaceDto>> getAllWorkspaces(
       @PageableDefault(size = 20, sort = "number") Pageable pageable) {
     return ResponseEntity.ok(workspaceService.getAllWorkspaces(pageable));
