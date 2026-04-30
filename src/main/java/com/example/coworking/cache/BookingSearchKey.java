@@ -7,12 +7,14 @@ import org.springframework.data.domain.Pageable;
 @Getter
 public class BookingSearchKey {
 
-  private final Long userId;
+  private final Long price;
+  private final Long capacity;
   private final int page;
   private final int size;
 
-  public BookingSearchKey(Long userId, Pageable pageable) {
-    this.userId = userId;
+  public BookingSearchKey(Long price, Long capacity, Pageable pageable) {
+    this.price = price;
+    this.capacity = capacity;
     this.page = pageable.getPageNumber();
     this.size = pageable.getPageSize();
   }
@@ -26,11 +28,12 @@ public class BookingSearchKey {
       return false;
     }
     BookingSearchKey that = (BookingSearchKey) o;
-    return page == that.page && size == that.size && this.userId.equals(that.userId);
+    return page == that.page && size == that.size && Objects.equals(price, that.price)
+        && Objects.equals(capacity, that.capacity);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userId, page, size);
+    return Objects.hash(price, capacity, page, size);
   }
 }

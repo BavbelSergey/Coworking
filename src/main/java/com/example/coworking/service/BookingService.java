@@ -39,13 +39,13 @@ public class BookingService {
     return bookingRepository.findAll(pageable).map(bookingMapper::toDto);
   }
 
-  public Page<BookingDto> getUserBookings(Long userId, Pageable pageable) {
-    Page<BookingDto> cachedBookings = bookingCache.get(userId, pageable);
+  public Page<BookingDto> getUserBookings(Long price, Long capacity, Pageable pageable) {
+    Page<BookingDto> cachedBookings = bookingCache.get(price, capacity, pageable);
     if (cachedBookings == null) {
 
-      Page<Booking> bookingsPage = bookingRepository.findBookingsByUserId(userId, pageable);
+      Page<Booking> bookingsPage = bookingRepository.findBookingsByUserId(price, capacity, pageable);
       Page<BookingDto> result = bookingsPage.map(bookingMapper::toDto);
-      bookingCache.put(userId, pageable, result);
+      bookingCache.put(price, capacity, pageable, result);
       log.info("Заказы занесены в кеш");
       return result;
     }
@@ -53,13 +53,13 @@ public class BookingService {
     return cachedBookings;
   }
 
-  public Page<BookingDto> getUserBookingsNative(Long userId, Pageable pageable) {
-    Page<BookingDto> cachedBookings = bookingCache.get(userId, pageable);
+  public Page<BookingDto> getUserBookingsNative(Long price, Long capacity, Pageable pageable) {
+    Page<BookingDto> cachedBookings = bookingCache.get(price, capacity, pageable);
     if (cachedBookings == null) {
 
-      Page<Booking> bookingsPage = bookingRepository.findBookingsByUserIdNative(userId, pageable);
+      Page<Booking> bookingsPage = bookingRepository.findBookingsByUserIdNative(price, capacity, pageable);
       Page<BookingDto> result = bookingsPage.map(bookingMapper::toDto);
-      bookingCache.put(userId, pageable, result);
+      bookingCache.put(price, capacity, pageable, result);
       log.info("Заказы сохранены в кеш");
       return result;
     }

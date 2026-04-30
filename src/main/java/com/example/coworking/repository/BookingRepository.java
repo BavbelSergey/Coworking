@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -20,12 +21,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       """
       SELECT DISTINCT b FROM Booking b
       LEFT JOIN FETCH b.user
-      LEFT JOIN FETCH b.workspace w
+      LEFT JOIN FETCH b.workspace
       LEFT JOIN FETCH b.payment
-      WHERE b.user.id = :userId
+      WHERE b.workspace.pricePerHour < :price
+      AND b.workspace.capacity > :capacity
       ORDER BY b.startTime DESC
       """)
-  Page<Booking> findBookingsByUserId(@Param("userId") Long userId, Pageable pageable);
+  Page<Booking> findBookingsByUserId(@RequestParam Long price,
+      @RequestParam Long capacity, Pageable pageable);
 
   @Query(value =
       """
@@ -35,30 +38,28 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             b.end_time,
             b.created_at,
             b.status,
-            u.id as user_id,
-            u.name as user_name,
-            u.email as user_email,
-            u.phone as user_phone,
-            w.id as workspace_id,
-            w.number as workspace_number,
-            w.capacity as workspace_capacity,
-            w.price_per_hour as workspace_price,
-            p.id as payment_id,
-            p.amount as payment_amount,
-            p.date as payment_date,
-            p.payment_method as payment_method
+            b.user_id,
+            b.workspace_id
         FROM bookings b
-        LEFT JOIN users u ON b.user_id = u.id
         LEFT JOIN workspaces w ON b.workspace_id = w.id
         LEFT JOIN payments p ON b.id = p.booking_id
-        WHERE b.user_id = :userId
+        WHERE w.price_per_hour < :price
+          AND w.capacity > :capacity
         ORDER BY b.start_time DESC
-      """, countQuery =
+      """,
+      countQuery =
       """
-      SELECT COUNT(*) FROM bookings b
-      WHERE b.user_id = :userId
-      """, nativeQuery = true)
-  Page<Booking> findBookingsByUserIdNative(@Param("userId") Long userId, Pageable pageable);
+      SELECT COUNT(DISTINCT b.id)
+      FROM bookings b
+      LEFT JOIN workspaces w ON b.workspace_id = w.id
+      LEFT JOIN payments p ON b.id = p.booking_id
+      WHERE w.price_per_hour < :price
+        AND p.payment_method = :method
+        AND w.capacity > :capacity
+      """,
+      nativeQuery = true)
+  Page<Booking> findBookingsByUserIdNative(@RequestParam Long price,
+      @RequestParam Long capacity, Pageable pageable);
 
   @NonNull
   @EntityGraph(attributePaths = {"user", "workspace", "payment"})

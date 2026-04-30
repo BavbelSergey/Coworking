@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,17 +29,15 @@ public class BookingController {
 
   private final BookingService bookingService;
 
-  @GetMapping("/user/{userId}")
-  public ResponseEntity<Page<BookingDto>> getUserBookings(@PathVariable Long userId,
-      @PageableDefault(sort = "startTime") Pageable pageable) {
-    Page<BookingDto> bookings = bookingService.getUserBookings(userId, pageable);
+  @GetMapping("/user/")
+  public ResponseEntity<Page<BookingDto>> getUserBookings(@RequestParam Long price, @RequestParam Long capacity, Pageable pageable) {
+    Page<BookingDto> bookings = bookingService.getUserBookings(price, capacity, pageable);
     return ResponseEntity.ok(bookings);
   }
 
-  @GetMapping("/user-native/{userId}")
-  public ResponseEntity<Page<BookingDto>> getUserBookingsNative(@PathVariable Long userId,
-      @PageableDefault(sort = "start_Time") Pageable pageable) {
-    Page<BookingDto> bookings = bookingService.getUserBookingsNative(userId, pageable);
+  @GetMapping("/user-native/")
+  public ResponseEntity<Page<BookingDto>> getUserBookingsNative(@RequestParam Long price, @RequestParam Long capacity, Pageable pageable) {
+    Page<BookingDto> bookings = bookingService.getUserBookingsNative(price, capacity, pageable);
     return ResponseEntity.ok(bookings);
   }
 

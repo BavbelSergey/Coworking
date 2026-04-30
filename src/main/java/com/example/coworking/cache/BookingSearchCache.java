@@ -14,16 +14,15 @@ public class BookingSearchCache {
 
   private final Map<BookingSearchKey, Page<BookingDto>> cache = new HashMap<>();
 
-  public Page<BookingDto> get(Long userId,
-      Pageable pageable) {
-    BookingSearchKey key = new BookingSearchKey(userId, pageable);
+  public Page<BookingDto> get(Long price, Long capacity, Pageable pageable) {
+    BookingSearchKey key = new BookingSearchKey(price, capacity, pageable);
 
     return cache.get(key);
   }
 
-  public void put(Long userId, Pageable pageable,
+  public void put(Long price, Long capacity, Pageable pageable,
       Page<BookingDto> result) {
-    BookingSearchKey key = new BookingSearchKey(userId, pageable);
+    BookingSearchKey key = new BookingSearchKey(price, capacity, pageable);
     cache.put(key, result);
   }
 
