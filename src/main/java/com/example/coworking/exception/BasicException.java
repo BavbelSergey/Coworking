@@ -1,8 +1,9 @@
 package com.example.coworking.exception;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-
+@Slf4j
 @Getter
 public class BasicException extends RuntimeException {
 
@@ -16,6 +17,6 @@ public class BasicException extends RuntimeException {
   }
 
   public void log() {
-    System.err.println("[ERROR] " + errorCode + ": " + getMessage());
+    log.info("[ERROR] {}: {}", errorCode, getMessage());
   }
 }

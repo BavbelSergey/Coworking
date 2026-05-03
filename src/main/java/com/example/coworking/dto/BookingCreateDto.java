@@ -14,17 +14,17 @@ import lombok.NoArgsConstructor;
 @Builder
 public class BookingCreateDto {
 
-  @NotNull(message = "Время начала обязательно")
-  @Future(message = "Время начала должно быть в будущем")
+  @NotNull(message = "Booking start time is required")
+  @Future(message = "Start time must be in the future")
   private LocalDateTime startTime;
 
-  @NotNull(message = "Время окончания обязательно")
-  @Future(message = "Время окончания должно быть в будущем")
+  @NotNull(message = "Booking end time is required")
+  @Future(message = "End time must be in the future")
   private LocalDateTime endTime;
 
-  @NotNull(message = "ID пользователя обязателен")
+  @NotNull(message = "User ID is required")
   private Long userId;
 
-  @NotNull(message = "ID рабочего места обязательно")
+  @NotNull(message = "Workspace ID is required")
   private Long workspaceId;
 }

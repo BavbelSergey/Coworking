@@ -3,6 +3,9 @@ package com.example.coworking.service;
 import com.example.coworking.dto.AmenityCreateDto;
 import com.example.coworking.dto.AmenityDto;
 import com.example.coworking.dto.AmenityUpdateDto;
+import com.example.coworking.exception.ConflictException;
+import com.example.coworking.exception.ErrorCode;
+import com.example.coworking.exception.NotFoundException;
 import com.example.coworking.mapper.AmenityMapper;
 import com.example.coworking.model.Amenity;
 import com.example.coworking.repository.AmenityRepository;
@@ -28,20 +31,20 @@ public class AmenityService {
 
   public AmenityDto getAmenityById(Long id) {
     Amenity amenity = amenityRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Amenity not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.AMENITY_NOT_FOUND));
     return amenityMapper.toDto(amenity);
   }
 
   public AmenityDto getAmenityByName(String name) {
     Amenity amenity = amenityRepository.findByName(name)
-        .orElseThrow(() -> new RuntimeException("Amenity not found with name: " + name));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.AMENITY_NOT_FOUND));
     return amenityMapper.toDto(amenity);
   }
 
   @Transactional
   public AmenityDto createAmenity(AmenityCreateDto createDto) {
     if (amenityRepository.existsByName(createDto.getName())) {
-      throw new RuntimeException("Amenity with name " + createDto.getName() + " already exists");
+      throw new ConflictException(ErrorCode.AMENITY_EXISTS);
     }
 
     Amenity amenity = amenityMapper.toEntity(createDto);
@@ -52,11 +55,11 @@ public class AmenityService {
   @Transactional
   public AmenityDto updateAmenity(Long id, AmenityUpdateDto updateDto) {
     Amenity amenity = amenityRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Amenity not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.AMENITY_NOT_FOUND));
 
     if (updateDto.getName() != null && !updateDto.getName().equals(amenity.getName())
         && amenityRepository.existsByName(updateDto.getName())) {
-      throw new RuntimeException("Amenity with name " + updateDto.getName() + " already exists");
+      throw new ConflictException(ErrorCode.AMENITY_EXISTS);
     }
 
     amenityMapper.updateEntity(updateDto, amenity);
@@ -72,12 +75,10 @@ public class AmenityService {
   @Transactional
   public void deleteAmenity(Long id) {
     Amenity amenity = amenityRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Amenity not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.AMENITY_NOT_FOUND));
 
     if (!amenity.getWorkspaces().isEmpty()) {
-      throw new RuntimeException(
-          "Cannot delete amenity that is used in " + amenity.getWorkspaces().size()
-              + " workspaces");
+      throw new ConflictException(ErrorCode.AMENITY_IS_USED_IN_WORKSPACE);
     }
 
     amenityRepository.delete(amenity);
@@ -86,10 +87,10 @@ public class AmenityService {
   @Transactional
   public void deleteAmenityByName(String name) {
     Amenity amenity = amenityRepository.findByName(name)
-        .orElseThrow(() -> new RuntimeException("Amenity not found with name: " + name));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.AMENITY_NOT_FOUND));
 
     if (!amenity.getWorkspaces().isEmpty()) {
-      throw new RuntimeException("Cannot delete amenity that is used in workspaces");
+      throw new ConflictException(ErrorCode.AMENITY_IS_USED_IN_WORKSPACE);
     }
 
     amenityRepository.deleteByName(name);

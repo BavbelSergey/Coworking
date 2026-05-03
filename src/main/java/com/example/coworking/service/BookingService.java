@@ -4,8 +4,10 @@ import com.example.coworking.cache.BookingSearchCache;
 import com.example.coworking.dto.BookingCreateDto;
 import com.example.coworking.dto.BookingDto;
 import com.example.coworking.dto.BookingUpdateDto;
+import com.example.coworking.exception.ConflictException;
 import com.example.coworking.exception.ErrorCode;
 import com.example.coworking.exception.NotFoundException;
+import com.example.coworking.exception.UnprocessableContentException;
 import com.example.coworking.mapper.BookingMapper;
 import com.example.coworking.model.Booking;
 import com.example.coworking.model.BookingStatus;
@@ -43,7 +45,8 @@ public class BookingService {
     Page<BookingDto> cachedBookings = bookingCache.get(price, capacity, pageable);
     if (cachedBookings == null) {
 
-      Page<Booking> bookingsPage = bookingRepository.findBookingsByUserId(price, capacity, pageable);
+      Page<Booking> bookingsPage =
+          bookingRepository.findBookingsByUserId(price, capacity, pageable);
       Page<BookingDto> result = bookingsPage.map(bookingMapper::toDto);
       bookingCache.put(price, capacity, pageable, result);
       log.info("Заказы занесены в кеш");
@@ -57,7 +60,8 @@ public class BookingService {
     Page<BookingDto> cachedBookings = bookingCache.get(price, capacity, pageable);
     if (cachedBookings == null) {
 
-      Page<Booking> bookingsPage = bookingRepository.findBookingsByUserIdNative(price, capacity, pageable);
+      Page<Booking> bookingsPage =
+          bookingRepository.findBookingsByUserIdNative(price, capacity, pageable);
       Page<BookingDto> result = bookingsPage.map(bookingMapper::toDto);
       bookingCache.put(price, capacity, pageable, result);
       log.info("Заказы сохранены в кеш");
@@ -75,26 +79,19 @@ public class BookingService {
 
   @Transactional
   public BookingDto createBooking(BookingCreateDto createDto) {
-    if (createDto.getStartTime().isAfter(createDto.getEndTime())) {
-      throw new RuntimeException("Start time must be before end time");
-    }
-
-    if (createDto.getStartTime().isBefore(LocalDateTime.now())) {
-      throw new RuntimeException("Start time must be in the future");
-    }
 
     Workspace workspace = workspaceRepository.findById(createDto.getWorkspaceId()).orElseThrow(
-        () -> new RuntimeException("Workspace not found with id: " + createDto.getWorkspaceId()));
+        () -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
 
     List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(workspace.getId(),
         createDto.getStartTime(), createDto.getEndTime());
 
     if (!conflictingBookings.isEmpty()) {
-      throw new RuntimeException("Workspace is not available for the selected time period");
+      throw new UnprocessableContentException(ErrorCode.WORKSPACE_NOT_AVAILABLE);
     }
 
     User user = userRepository.findById(createDto.getUserId()).orElseThrow(
-        () -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+        () -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
     Booking booking = bookingMapper.toEntity(createDto, user, workspace);
     Booking savedBooking = bookingRepository.save(booking);
@@ -106,7 +103,7 @@ public class BookingService {
   @Transactional
   public BookingDto updateBooking(Long id, BookingUpdateDto updateDto) {
     Booking booking = bookingRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
 
     if (booking.getStatus() == BookingStatus.COMPLETED
         || booking.getStatus() == BookingStatus.CANCELLED) {
@@ -119,17 +116,13 @@ public class BookingService {
       LocalDateTime newEnd =
           updateDto.getEndTime() != null ? updateDto.getEndTime() : booking.getEndTime();
 
-      if (newStart.isAfter(newEnd)) {
-        throw new RuntimeException("Start time must be before end time");
-      }
-
       List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(
           booking.getWorkspace().getId(), newStart, newEnd);
 
       conflictingBookings.removeIf(b -> b.getId().equals(id));
 
       if (!conflictingBookings.isEmpty()) {
-        throw new RuntimeException("Workspace is not available for the updated time period");
+        throw new UnprocessableContentException(ErrorCode.WORKSPACE_NOT_AVAILABLE);
       }
     }
 
@@ -146,16 +139,9 @@ public class BookingService {
     Booking booking = bookingRepository.findById(id)
         .orElseThrow(() -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
 
-    if (booking.getStatus() == BookingStatus.COMPLETED) {
-      throw new RuntimeException("Cannot cancel completed booking");
-    }
-
-    if (booking.getStatus() == BookingStatus.CANCELLED) {
-      throw new RuntimeException("Booking is already cancelled");
-    }
-
-    if (booking.getStartTime().isBefore(LocalDateTime.now())) {
-      throw new RuntimeException("Cannot cancel booking that has already started");
+    if (booking.getStatus() == BookingStatus.COMPLETED
+        || booking.getStatus() == BookingStatus.CANCELLED) {
+      throw new ConflictException(ErrorCode.CAN_NOT_CANCEL);
     }
 
     booking.setStatus(BookingStatus.CANCELLED);
@@ -192,7 +178,7 @@ public class BookingService {
         .orElseThrow(() -> new NotFoundException(ErrorCode.BOOKING_NOT_FOUND));
 
     if (booking.getStatus() != BookingStatus.PENDING) {
-      throw new RuntimeException("Only pending bookings can be confirmed");
+      throw new ConflictException(ErrorCode.CAN_NOT_CONFIRM);
     }
 
     booking.setStatus(BookingStatus.PENDING);

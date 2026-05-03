@@ -60,7 +60,8 @@ public class UserService {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-    if (updateDto.getEmail() != null && !updateDto.getEmail().equals(user.getEmail())) {
+    if (updateDto.getEmail() != null && userRepository.existsByEmail(updateDto.getEmail())
+        && !updateDto.getEmail().equals(user.getEmail())) {
       if (userRepository.existsByEmail(updateDto.getEmail())) {
         throw new ConflictException(ErrorCode.USER_EXISTS_WITH_EMAIL);
       }
