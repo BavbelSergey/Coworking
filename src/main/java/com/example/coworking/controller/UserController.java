@@ -4,6 +4,9 @@ import com.example.coworking.dto.UserCreateDto;
 import com.example.coworking.dto.UserDto;
 import com.example.coworking.dto.UserUpdateDto;
 import com.example.coworking.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -12,9 +15,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,77 +25,141 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Users", description = "Управление пользователями коворкинга")
 public class UserController {
 
   private final UserService userService;
 
+  @Operation(
+      summary = "Получить список пользователей",
+      description = "Возвращает всех пользователей с пагинацией и сортировкой по имени"
+  )
   @GetMapping
-  public ResponseEntity<Page<UserDto>> getAllUsers(
-      @PageableDefault(size = 20, sort = "name") Pageable pageable) {
-    return ResponseEntity.ok(userService.getAllUsers(pageable));
+  public Page<UserDto> getAllUsers(
+      @Parameter(hidden = true) Pageable pageable
+  ) {
+    return userService.getAllUsers(pageable);
   }
 
+  @Operation(
+      summary = "Получить пользователя по ID",
+      description = "Возвращает детальную информацию о пользователе"
+  )
   @GetMapping("/{id}")
-  public ResponseEntity<UserDto> getUserById(
-      @PathVariable @Positive(message = "User ID must be a positive number") Long id) {
-    return ResponseEntity.ok(userService.getUserById(id));
+  public UserDto getUserById(
+      @Parameter(description = "ID пользователя", example = "1")
+      @PathVariable @Positive(message = "User ID must be a positive number") Long id
+  ) {
+    return userService.getUserById(id);
   }
 
+  @Operation(
+      summary = "Получить пользователя по email",
+      description = "Возвращает пользователя по его email"
+  )
   @GetMapping("/email/{email}")
-  public ResponseEntity<UserDto> getUserByEmail(
-      @PathVariable @Email(message =
-          "Invalid email format") @NotBlank(message = "Email cannot be blank") String email) {
-    return ResponseEntity.ok(userService.getUserByEmail(email));
+  public UserDto getUserByEmail(
+      @Parameter(description = "Email пользователя", example = "user@example.com")
+      @PathVariable @Email(message = "Invalid email format")
+      @NotBlank(message = "Email cannot be blank") String email
+  ) {
+    return userService.getUserByEmail(email);
   }
 
+  @Operation(
+      summary = "Создать пользователя",
+      description = "Создаёт нового пользователя. Email и телефон должны быть уникальными"
+  )
   @PostMapping
-  public ResponseEntity<UserDto> createUser(
-      @Valid @RequestBody UserCreateDto createDto) {
-    UserDto createdUser = userService.createUser(createDto);
-    return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+  @ResponseStatus(HttpStatus.CREATED)
+  public UserDto createUser(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "Данные для создания пользователя",
+          required = true
+      )
+      @Valid @RequestBody UserCreateDto createDto
+  ) {
+    return userService.createUser(createDto);
   }
 
+  @Operation(
+      summary = "Обновить пользователя",
+      description = "Полностью обновляет данные пользователя по ID. Email и телефон должны быть уникальными"
+  )
   @PutMapping("/{id}")
-  public ResponseEntity<UserDto> updateUser(
+  public UserDto updateUser(
+      @Parameter(description = "ID пользователя", example = "1")
       @PathVariable @Positive(message = "User ID must be a positive number") Long id,
-      @Valid @RequestBody UserUpdateDto updateDto) {
-    UserDto updatedUser = userService.updateUser(id, updateDto);
-    return ResponseEntity.ok(updatedUser);
+
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "Новые данные пользователя",
+          required = true
+      )
+      @Valid @RequestBody UserUpdateDto updateDto
+  ) {
+    return userService.updateUser(id, updateDto);
   }
 
+  @Operation(
+      summary = "Удалить пользователя",
+      description = "Удаляет пользователя. Нельзя удалить пользователя с активными бронированиями"
+  )
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(
-      @PathVariable @Positive(message = "User ID must be a positive number") Long id) {
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteUser(
+      @Parameter(description = "ID пользователя", example = "1")
+      @PathVariable @Positive(message = "User ID must be a positive number") Long id
+  ) {
     userService.deleteUser(id);
-    return ResponseEntity.noContent().build();
   }
 
+  @Operation(
+      summary = "Поиск пользователей по имени",
+      description = "Возвращает пользователей, чьё имя содержит указанную строку (без учёта регистра)"
+  )
   @GetMapping("/search")
-  public ResponseEntity<List<UserDto>> searchUsersByName(
-      @RequestParam @NotBlank(message = "Search name cannot be blank") String name) {
-    return ResponseEntity.ok(userService.searchUsersByName(name));
+  public List<UserDto> searchUsersByName(
+      @Parameter(description = "Строка для поиска в имени", example = "Ivan")
+      @RequestParam @NotBlank(message = "Search name cannot be blank") String name
+  ) {
+    return userService.searchUsersByName(name);
   }
 
+  @Operation(
+      summary = "Пользователи с активными бронированиями",
+      description = "Возвращает пользователей, у которых есть бронирования в статусе PENDING"
+  )
   @GetMapping("/active-bookings")
-  public ResponseEntity<List<UserDto>> getUsersWithActiveBookings() {
-    return ResponseEntity.ok(userService.getUsersWithActiveBookings());
+  public List<UserDto> getUsersWithActiveBookings() {
+    return userService.getUsersWithActiveBookings();
   }
 
+  @Operation(
+      summary = "Пользователи без бронирований",
+      description = "Возвращает пользователей, у которых нет ни одного бронирования"
+  )
   @GetMapping("/without-bookings")
-  public ResponseEntity<List<UserDto>> getUsersWithoutBookings() {
-    return ResponseEntity.ok(userService.getUsersWithoutBookings());
+  public List<UserDto> getUsersWithoutBookings() {
+    return userService.getUsersWithoutBookings();
   }
 
+  @Operation(
+      summary = "Проверить существование email",
+      description = "Возвращает true, если пользователь с таким email уже зарегистрирован"
+  )
   @GetMapping("/exists/email/{email}")
-  public ResponseEntity<Boolean> existsByEmail(
-      @PathVariable @Email(message =
-          "Invalid email format") @NotBlank(message = "Email cannot be blank") String email) {
-    return ResponseEntity.ok(userService.existsByEmail(email));
+  public Boolean existsByEmail(
+      @Parameter(description = "Email для проверки", example = "user@example.com")
+      @PathVariable @Email(message = "Invalid email format")
+      @NotBlank(message = "Email cannot be blank") String email
+  ) {
+    return userService.existsByEmail(email);
   }
 }

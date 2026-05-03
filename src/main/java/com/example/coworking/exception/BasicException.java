@@ -15,8 +15,4 @@ public class BasicException extends RuntimeException {
     this.errorCode = errorCode;
     this.httpStatus = httpStatus;
   }
-
-  public void log() {
-    log.info("[ERROR] {}: {}", errorCode, getMessage());
-  }
 }

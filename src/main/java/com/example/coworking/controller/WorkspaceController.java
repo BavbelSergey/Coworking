@@ -3,6 +3,9 @@ package com.example.coworking.controller;
 import com.example.coworking.cache.BookingSearchCache;
 import com.example.coworking.dto.WorkspaceDto;
 import com.example.coworking.service.WorkspaceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
@@ -10,9 +13,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,120 +24,224 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/workspaces")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Workspaces", description = "Управление рабочими местами коворкинга")
 public class WorkspaceController {
 
   private final WorkspaceService workspaceService;
   private final BookingSearchCache searchCache;
 
+  @Operation(
+      summary = "Получить список рабочих мест",
+      description = "Возвращает все рабочие места с пагинацией и сортировкой по номеру"
+  )
   @GetMapping
-  public ResponseEntity<Page<WorkspaceDto>> getAllWorkspaces(
-      @PageableDefault(size = 20, sort = "number") Pageable pageable) {
-    return ResponseEntity.ok(workspaceService.getAllWorkspaces(pageable));
+  public Page<WorkspaceDto> getAllWorkspaces(
+      @Parameter(hidden = true) Pageable pageable
+  ) {
+    return workspaceService.getAllWorkspaces(pageable);
   }
 
+  @Operation(
+      summary = "Получить рабочее место по ID",
+      description = "Возвращает детальную информацию о рабочем месте, включая amenities"
+  )
   @GetMapping("/{id}")
-  public ResponseEntity<WorkspaceDto> getWorkspaceById(
-      @PathVariable @Positive(message = "Workspace ID must be a positive number") Long id) {
-    WorkspaceDto workspace = workspaceService.getWorkspaceById(id);
-    return ResponseEntity.ok(workspace);
+  public WorkspaceDto getWorkspaceById(
+      @Parameter(description = "ID рабочего места", example = "1")
+      @PathVariable @Positive(message = "Workspace ID must be a positive number") Long id
+  ) {
+    return workspaceService.getWorkspaceById(id);
   }
 
+  @Operation(
+      summary = "Создать рабочее место",
+      description = "Создаёт новое рабочее место. "
+          + "Номер должен быть уникальным. Кеш поиска сбрасывается"
+  )
   @PostMapping
-  public ResponseEntity<WorkspaceDto> createWorkspace(
-      @Valid @RequestBody WorkspaceDto workspaceDto) {
+  @ResponseStatus(HttpStatus.CREATED)
+  public WorkspaceDto createWorkspace(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "Данные для создания рабочего места",
+          required = true
+      )
+      @Valid @RequestBody WorkspaceDto workspaceDto
+  ) {
     WorkspaceDto createdWorkspace = workspaceService.createWorkspace(workspaceDto);
     searchCache.clear();
-    return new ResponseEntity<>(createdWorkspace, HttpStatus.CREATED);
+    return createdWorkspace;
   }
 
+  @Operation(
+      summary = "Полностью обновить рабочее место",
+      description = "Обновляет все поля рабочего места. "
+          + "Номер должен быть уникальным. Кеш поиска сбрасывается"
+  )
   @PutMapping("/{id}")
-  public ResponseEntity<WorkspaceDto> updateWorkspace(
+  public WorkspaceDto updateWorkspace(
+      @Parameter(description = "ID рабочего места", example = "1")
       @PathVariable @Positive(message = "Workspace ID must be a positive number") Long id,
-      @Valid @RequestBody WorkspaceDto workspaceDto) {
+
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "Новые данные рабочего места",
+          required = true
+      )
+      @Valid @RequestBody WorkspaceDto workspaceDto
+  ) {
     WorkspaceDto updatedWorkspace = workspaceService.updateWorkspace(id, workspaceDto);
     searchCache.clear();
-    return ResponseEntity.ok(updatedWorkspace);
+    return updatedWorkspace;
   }
 
+  @Operation(
+      summary = "Частично обновить рабочее место",
+      description = "Обновляет только переданные поля. "
+          + "Можно передать только номер, или только цену, и т.д. "
+          + "Кеш поиска сбрасывается"
+  )
   @PatchMapping("/{id}")
-  public ResponseEntity<WorkspaceDto> partialUpdateWorkspace(
+  public WorkspaceDto partialUpdateWorkspace(
+      @Parameter(description = "ID рабочего места", example = "1")
       @PathVariable @Positive(message = "Workspace ID must be a positive number") Long id,
-      @Valid @RequestBody WorkspaceDto workspaceDto) {
+
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "Поля для частичного обновления (можно передать не все)",
+          required = true
+      )
+      @Valid @RequestBody WorkspaceDto workspaceDto
+  ) {
     WorkspaceDto updatedWorkspace = workspaceService.partialUpdateWorkspace(id, workspaceDto);
     searchCache.clear();
-    return ResponseEntity.ok(updatedWorkspace);
+    return updatedWorkspace;
   }
 
+  @Operation(
+      summary = "Удалить рабочее место",
+      description = "Удаляет рабочее место. "
+          + "Нельзя удалить, если есть активные (CONFIRMED) бронирования"
+  )
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteWorkspace(
-      @PathVariable @Positive(message = "Workspace ID must be a positive number") Long id) {
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteWorkspace(
+      @Parameter(description = "ID рабочего места", example = "1")
+      @PathVariable @Positive(message = "Workspace ID must be a positive number") Long id
+  ) {
     workspaceService.deleteWorkspace(id);
-    return ResponseEntity.noContent().build();
   }
 
+  @Operation(
+      summary = "Найти доступные рабочие места",
+      description = "Возвращает рабочие места по фильтрам: минимальная вместимость, "
+          + "максимальная цена и список amenities.Все параметры опциональны"
+  )
   @GetMapping("/available")
-  public ResponseEntity<List<WorkspaceDto>> getAvailableWorkspaces(
-      @RequestParam(required = false) @Min(value = 0, message =
-          "Minimum capacity cannot be negative") Integer minCapacity,
-      @RequestParam(required = false) @Positive(message =
-          "Maximum price must be positive") Double maxPrice,
+  public List<WorkspaceDto> getAvailableWorkspaces(
+      @Parameter(description = "Минимальная вместимость", example = "2")
+      @RequestParam(required = false) @Min(value = 0,
+          message = "Minimum capacity cannot be negative")
+      Integer minCapacity,
+
+      @Parameter(description = "Максимальная цена в час", example = "500.00")
+      @RequestParam(required = false) @Positive(message = "Maximum price must be positive")
+      Double maxPrice,
+
+      @Parameter(description = "Список ID удобств, "
+          + "которые должны быть у рабочего места", example = "[1, 2, 3]")
       @RequestParam(required = false) List<@Positive(message =
-          "Amenity ID must be positive") Long> amenityIds) {
-    List<WorkspaceDto> availableWorkspaces = workspaceService.findAvailableWorkspaces(minCapacity,
-        maxPrice, amenityIds);
-    return ResponseEntity.ok(availableWorkspaces);
+          "Amenity ID must be positive") Long> amenityIds
+  ) {
+    return workspaceService.findAvailableWorkspaces(minCapacity, maxPrice, amenityIds);
   }
 
+  @Operation(
+      summary = "Рабочие места по минимальной вместимости",
+      description = "Возвращает рабочие места с вместимостью не менее указанной"
+  )
   @GetMapping("/capacity/{minCapacity}")
-  public ResponseEntity<List<WorkspaceDto>> getWorkspacesByMinCapacity(
-      @PathVariable @Min(value = 0, message =
-          "Minimum capacity cannot be negative") Integer minCapacity) {
-    List<WorkspaceDto> workspaces = workspaceService.getWorkspacesByMinCapacity(minCapacity);
-    return ResponseEntity.ok(workspaces);
+  public List<WorkspaceDto> getWorkspacesByMinCapacity(
+      @Parameter(description = "Минимальная вместимость", example = "4")
+      @PathVariable @Min(value = 0, message = "Minimum capacity cannot be negative")
+      Integer minCapacity
+  ) {
+    return workspaceService.getWorkspacesByMinCapacity(minCapacity);
   }
 
+  @Operation(
+      summary = "Рабочие места по максимальной цене",
+      description = "Возвращает рабочие места с ценой не выше указанной"
+  )
   @GetMapping("/price")
-  public ResponseEntity<List<WorkspaceDto>> getWorkspacesByMaxPrice(
-      @RequestParam @Positive(message = "Maximum price must be positive") Double maxPrice) {
-    List<WorkspaceDto> workspaces = workspaceService.getWorkspacesByMaxPrice(maxPrice);
-    return ResponseEntity.ok(workspaces);
+  public List<WorkspaceDto> getWorkspacesByMaxPrice(
+      @Parameter(description = "Максимальная цена в час", example = "500.00")
+      @RequestParam @Positive(message = "Maximum price must be positive") Double maxPrice
+  ) {
+    return workspaceService.getWorkspacesByMaxPrice(maxPrice);
   }
 
+  @Operation(
+      summary = "Добавить удобство к рабочему месту",
+      description = "Привязывает удобство к рабочему месту. "
+          + "Если удобство уже привязано — ничего не делает. "
+          + "Кеш поиска сбрасывается"
+  )
   @PostMapping("/{workspaceId}/amenities/{amenityId}")
-  public ResponseEntity<WorkspaceDto> addAmenityToWorkspace(
+  public WorkspaceDto addAmenityToWorkspace(
+      @Parameter(description = "ID рабочего места", example = "1")
       @PathVariable @Positive(message = "Workspace ID must be positive") Long workspaceId,
-      @PathVariable @Positive(message = "Amenity ID must be positive") Long amenityId) {
+
+      @Parameter(description = "ID удобства", example = "1")
+      @PathVariable @Positive(message = "Amenity ID must be positive") Long amenityId
+  ) {
     WorkspaceDto updatedWorkspace = workspaceService.addAmenityToWorkspace(workspaceId, amenityId);
     searchCache.clear();
-    return ResponseEntity.ok(updatedWorkspace);
+    return updatedWorkspace;
   }
 
+  @Operation(
+      summary = "Удалить удобство у рабочего места",
+      description = "Отвязывает удобство от рабочего места"
+  )
   @DeleteMapping("/{workspaceId}/amenities/{amenityId}")
-  public ResponseEntity<WorkspaceDto> removeAmenityFromWorkspace(
+  public WorkspaceDto removeAmenityFromWorkspace(
+      @Parameter(description = "ID рабочего места", example = "1")
       @PathVariable @Positive(message = "Workspace ID must be positive") Long workspaceId,
-      @PathVariable @Positive(message = "Amenity ID must be positive") Long amenityId) {
-    WorkspaceDto updatedWorkspace = workspaceService.removeAmenityFromWorkspace(workspaceId,
-        amenityId);
-    return ResponseEntity.ok(updatedWorkspace);
+
+      @Parameter(description = "ID удобства", example = "1")
+      @PathVariable @Positive(message = "Amenity ID must be positive") Long amenityId
+  ) {
+    return workspaceService.removeAmenityFromWorkspace(workspaceId, amenityId);
   }
 
+  @Operation(
+      summary = "Проверить существование номера",
+      description = "Возвращает true, если рабочее место с таким номером уже существует"
+  )
   @GetMapping("/exists/number/{number}")
-  public ResponseEntity<Boolean> existsByNumber(
-      @PathVariable @Positive(message = "Workspace number must be positive") Integer number) {
-    boolean exists = workspaceService.existsByNumber(number);
-    return ResponseEntity.ok(exists);
+  public Boolean existsByNumber(
+      @Parameter(description = "Номер рабочего места", example = "101")
+      @PathVariable @Positive(message = "Workspace number must be positive") Integer number
+  ) {
+    return workspaceService.existsByNumber(number);
   }
 
+  @Operation(
+      summary = "Удалить рабочее место по номеру",
+      description = "Удаляет рабочее место по его номеру. "
+          + "Нельзя удалить, если есть активные бронирования"
+  )
   @DeleteMapping("/number/{number}")
-  public ResponseEntity<Void> deleteByNumber(
-      @PathVariable @Positive(message = "Workspace number must be positive") Integer number) {
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteByNumber(
+      @Parameter(description = "Номер рабочего места", example = "101")
+      @PathVariable @Positive(message = "Workspace number must be positive") Integer number
+  ) {
     workspaceService.deleteByNumber(number);
-    return ResponseEntity.noContent().build();
   }
 }
