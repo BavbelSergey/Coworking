@@ -67,14 +67,6 @@ public class AmenityController {
     return ResponseEntity.ok(updatedAmenity);
   }
 
-  @PatchMapping("/{id}")
-  public ResponseEntity<AmenityDto> partialUpdateAmenity(
-      @PathVariable @Positive(message = "ID must be a positive number") Long id,
-      @Valid @RequestBody AmenityUpdateDto updateDto) {
-    AmenityDto updatedAmenity = amenityService.partialUpdateAmenity(id, updateDto);
-    return ResponseEntity.ok(updatedAmenity);
-  }
-
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteAmenity(
       @PathVariable @Positive(message = "ID must be a positive number") Long id) {

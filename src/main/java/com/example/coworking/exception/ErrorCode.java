@@ -5,11 +5,11 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
   USER_NOT_FOUND("User not found", "USER_NOT_FOUND"),
-  USER_EXISTS_WITH_PHONE("User exists with this phone number", "USER_EXISTS"),
+  USER_EXISTS_WITH_PHONE("User exists with this phone number", "USER_EXISTS_WITH_PHONE"),
   USER_HAS_ACTIVE_BOOKINGS("Can not delete user with active bookings", "USER_HAS_ACTIVE_BOOKINGS"),
-  USER_EXISTS_WITH_EMAIL("User exists with this email address", "USER_EXISTS"),
+  USER_EXISTS_WITH_EMAIL("User exists with this email address", "USER_EXISTS_WITH_EMAIL"),
   WORKSPACE_NOT_FOUND("Workspace not found", "WORKSPACE_NOT_FOUND"),
-  WORKSPACE_EXISTS_WITH_NUMBER("User exists with this phone number", "USER_EXISTS"),
+  WORKSPACE_EXISTS_WITH_NUMBER("User exists with this phone number", "USER_EXISTS_WITH_NUMBER"),
   WORKSPACE_HAS_ACTIVE_BOOKINGS(
       "Can not delete workspace with active bookings", "WORKSPACE_HAS_ACTIVE_BOOKINGS"),
   PAYMENT_EXISTS_FOR_BOOKING(
@@ -23,6 +23,7 @@ public enum ErrorCode {
   BAD_REQUEST("Bad request", "BAD_REQUEST"),
   CAN_NOT_CANCEL("Can not cancel canceled or completed booking", "CAN_NOT_CANCEL"),
   CAN_NOT_CONFIRM("Only pending bookings can be confirmed", "CAN_NOT_CONFIRM"),
+  CAN_NOT_UPDATE("Only canceled or completed bookings can be updated", "CAN_NOT_UPDATE"),
   WORKSPACE_NOT_AVAILABLE(
       "Workspace is not available for the selected time period", "WORKSPACE_NOT_AVAILABLE");
   private final String message;

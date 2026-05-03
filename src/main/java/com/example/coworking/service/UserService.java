@@ -62,9 +62,7 @@ public class UserService {
 
     if (updateDto.getEmail() != null && userRepository.existsByEmail(updateDto.getEmail())
         && !updateDto.getEmail().equals(user.getEmail())) {
-      if (userRepository.existsByEmail(updateDto.getEmail())) {
-        throw new ConflictException(ErrorCode.USER_EXISTS_WITH_EMAIL);
-      }
+      throw new ConflictException(ErrorCode.USER_EXISTS_WITH_EMAIL);
     }
 
     if (updateDto.getPhone() != null && !updateDto.getPhone().equals(user.getPhone())

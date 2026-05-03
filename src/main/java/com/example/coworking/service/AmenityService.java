@@ -68,11 +68,6 @@ public class AmenityService {
   }
 
   @Transactional
-  public AmenityDto partialUpdateAmenity(Long id, AmenityUpdateDto updateDto) {
-    return updateAmenity(id, updateDto);
-  }
-
-  @Transactional
   public void deleteAmenity(Long id) {
     Amenity amenity = amenityRepository.findById(id)
         .orElseThrow(() -> new NotFoundException(ErrorCode.AMENITY_NOT_FOUND));
