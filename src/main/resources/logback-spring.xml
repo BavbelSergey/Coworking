@@ -24,11 +24,11 @@
         ${LOG_PATH}/archive/${LOG_FILE}.%d{yyyy-MM-dd}.%i.log.gz
       </fileNamePattern>
 
-      <maxFileSize>10MB</maxFileSize>
+      <maxFileSize>5KB</maxFileSize>
 
       <maxHistory>30</maxHistory>
 
-      <totalSizeCap>100MB</totalSizeCap>
+      <totalSizeCap>20KB</totalSizeCap>
 
     </rollingPolicy>
 
