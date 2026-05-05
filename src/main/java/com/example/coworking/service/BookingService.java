@@ -37,6 +37,23 @@ public class BookingService {
   private final BookingMapper bookingMapper;
   private final BookingSearchCache bookingCache;
 
+  @Transactional
+  public List<BookingDto> createBookingsBulk(List<BookingCreateDto> dtos) {
+    log.info("Bulk creating {} bookings", dtos.size());
+
+    if (dtos.isEmpty()) {
+      log.warn("Bulk create called with empty list");
+      throw new UnprocessableContentException(ErrorCode.BOOKING_NOT_FOUND);
+    }
+
+    List<BookingDto> result = dtos.stream()
+        .map(this::createBooking)
+        .toList();
+
+    log.info("Successfully bulk created {} bookings", result.size());
+    return result;
+  }
+
   public Page<BookingDto> getAllBookings(Pageable pageable) {
     log.debug("Fetching all bookings with pageable: {}", pageable);
     Page<BookingDto> result = bookingRepository.findAll(pageable).map(bookingMapper::toDto);
@@ -158,7 +175,9 @@ public class BookingService {
 
       List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(
           booking.getWorkspace().getId(), newStart, newEnd);
-      conflictingBookings.removeIf(b -> b.getId().equals(id));
+      conflictingBookings = conflictingBookings.stream()
+          .filter(b -> !b.getId().equals(id))
+          .toList();
 
       if (!conflictingBookings.isEmpty()) {
         log.warn("Cannot update booking id={} — workspace not available for {} – {} ({} conflicts)",

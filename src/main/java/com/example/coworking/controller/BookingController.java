@@ -37,6 +37,22 @@ public class BookingController {
   private final BookingService bookingService;
 
   @Operation(
+      summary = "Массовое создание бронирований",
+      description = "Создаёт несколько бронирований одним запросом"
+  )
+  @PostMapping("/bulk")
+  @ResponseStatus(HttpStatus.CREATED)
+  public List<BookingDto> createBookingsBulk(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "Список бронирований для создания",
+          required = true
+      )
+      @Valid @RequestBody List<@Valid BookingCreateDto> dtos
+  ) {
+    return bookingService.createBookingsBulk(dtos);
+  }
+
+  @Operation(
       summary = "Получить бронирования пользователя по фильтрам",
       description = "Возвращает бронирования, отфильтрованные по максимальной цене и "
           + "минимальной вместимости рабочего места. Результаты кешируются"

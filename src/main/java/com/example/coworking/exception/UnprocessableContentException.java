@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 public class UnprocessableContentException extends BasicException {
 
   public UnprocessableContentException(ErrorCode errorCode) {
-    super(errorCode, HttpStatus.UNPROCESSABLE_CONTENT);
+    super(errorCode, HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
 }

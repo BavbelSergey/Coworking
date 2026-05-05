@@ -118,7 +118,7 @@ public class UserService {
           return new NotFoundException(ErrorCode.USER_NOT_FOUND);
         });
 
-    boolean hasActiveBookings = user.getBookings().stream()
+    boolean hasActiveBookings = user.getBookings() != null && user.getBookings().stream()
         .anyMatch(booking -> booking.getStatus().name().equals("PENDING"));
 
     if (hasActiveBookings) {

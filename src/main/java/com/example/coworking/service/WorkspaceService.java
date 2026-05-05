@@ -12,7 +12,9 @@ import com.example.coworking.model.Workspace;
 import com.example.coworking.repository.AmenityRepository;
 import com.example.coworking.repository.WorkspaceRepository;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +42,12 @@ public class WorkspaceService {
 
   public WorkspaceDto getWorkspaceById(Long id) {
     log.debug("Fetching workspace by id: {}", id);
-    Workspace workspace = workspaceRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("Workspace not found with id: {}", id);
-          return new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
-        });
+    Optional<Workspace> workspaceOpt = workspaceRepository.findById(id);
+    if (workspaceOpt.isEmpty()) {
+      log.warn("Workspace not found with id: {}", id);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
+    }
+    Workspace workspace = workspaceOpt.get();
     log.info("Successfully fetched workspace: id={}, number={}", id, workspace.getNumber());
     return workspaceMapper.toDto(workspace);
   }
@@ -81,11 +84,12 @@ public class WorkspaceService {
     log.info("Updating workspace (full): id={}, number={}, capacity={}, pricePerHour={}",
         id, workspaceDto.getNumber(), workspaceDto.getCapacity(), workspaceDto.getPricePerHour());
 
-    Workspace workspace = workspaceRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("Cannot update — workspace not found: id={}", id);
-          return new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
-        });
+    Optional<Workspace> workspaceOpt = workspaceRepository.findById(id);
+    if (workspaceOpt.isEmpty()) {
+      log.warn("Cannot update — workspace not found: id={}", id);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
+    }
+    Workspace workspace = workspaceOpt.get();
 
     if (!workspace.getNumber().equals(workspaceDto.getNumber())
         && workspaceRepository.existsByNumber(workspaceDto.getNumber())) {
@@ -121,18 +125,19 @@ public class WorkspaceService {
   public WorkspaceDto partialUpdateWorkspace(Long id, WorkspaceDto workspaceDto) {
     log.info("Partially updating workspace: id={}, updateData={}", id, workspaceDto);
 
-    Workspace workspace = workspaceRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("Cannot partially update — workspace not found: id={}", id);
-          return new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
-        });
+    Optional<Workspace> workspaceOpt = workspaceRepository.findById(id);
+    if (workspaceOpt.isEmpty()) {
+      log.warn("Cannot partially update — workspace not found: id={}", id);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
+    }
+    Workspace workspace = workspaceOpt.get();
 
     if (workspaceDto.getNumber() != null
         && !workspace.getNumber().equals(workspaceDto.getNumber())
         && workspaceRepository.existsByNumber(workspaceDto.getNumber())) {
       log.warn("Cannot partially update workspace id={} — number already taken: {}",
           id, workspaceDto.getNumber());
-      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER); // ← исправлено
+      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER);
     }
 
     Integer oldNumber = workspace.getNumber();
@@ -147,11 +152,12 @@ public class WorkspaceService {
   public void deleteWorkspace(Long id) {
     log.info("Attempting to delete workspace: id={}", id);
 
-    Workspace workspace = workspaceRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("Cannot delete — workspace not found: id={}", id);
-          return new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
-        });
+    Optional<Workspace> workspaceOpt = workspaceRepository.findById(id);
+    if (workspaceOpt.isEmpty()) {
+      log.warn("Cannot delete — workspace not found: id={}", id);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
+    }
+    Workspace workspace = workspaceOpt.get();
 
     boolean hasActiveBookings = workspace.getBookings() != null
         && workspace.getBookings().stream()
@@ -210,20 +216,22 @@ public class WorkspaceService {
   public WorkspaceDto addAmenityToWorkspace(Long workspaceId, Long amenityId) {
     log.info("Adding amenity {} to workspace {}", amenityId, workspaceId);
 
-    Workspace workspace = workspaceRepository.findById(workspaceId)
-        .orElseThrow(() -> {
-          log.warn("Cannot add amenity — workspace not found: id={}", workspaceId);
-          return new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
-        });
+    Optional<Workspace> workspaceOpt = workspaceRepository.findById(workspaceId);
+    if (workspaceOpt.isEmpty()) {
+      log.warn("Cannot add amenity — workspace not found: id={}", workspaceId);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
+    }
+    Workspace workspace = workspaceOpt.get();
 
-    Amenity amenity = amenityRepository.findById(amenityId)
-        .orElseThrow(() -> {
-          log.warn("Cannot add amenity — amenity not found: id={}", amenityId);
-          return new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
-        });
+    Optional<Amenity> amenityOpt = amenityRepository.findById(amenityId);
+    if (amenityOpt.isEmpty()) {
+      log.warn("Cannot add amenity — amenity not found: id={}", amenityId);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
+    }
+    Amenity amenity = amenityOpt.get();
 
     if (workspace.getAmenities() == null) {
-      workspace.setAmenities(new java.util.ArrayList<>());
+      workspace.setAmenities(new ArrayList<>());
     }
 
     if (!workspace.getAmenities().contains(amenity)) {
@@ -241,11 +249,12 @@ public class WorkspaceService {
   public WorkspaceDto removeAmenityFromWorkspace(Long workspaceId, Long amenityId) {
     log.info("Removing amenity {} from workspace {}", amenityId, workspaceId);
 
-    Workspace workspace = workspaceRepository.findById(workspaceId)
-        .orElseThrow(() -> {
-          log.warn("Cannot remove amenity — workspace not found: id={}", workspaceId);
-          return new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
-        });
+    Optional<Workspace> workspaceOpt = workspaceRepository.findById(workspaceId);
+    if (workspaceOpt.isEmpty()) {
+      log.warn("Cannot remove amenity — workspace not found: id={}", workspaceId);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
+    }
+    Workspace workspace = workspaceOpt.get();
 
     if (workspace.getAmenities() != null) {
       boolean removed = workspace.getAmenities().removeIf(a -> a.getId().equals(amenityId));
@@ -271,11 +280,12 @@ public class WorkspaceService {
   public void deleteByNumber(Integer number) {
     log.info("Attempting to delete workspace by number: {}", number);
 
-    Workspace workspace = workspaceRepository.findByNumber(number)
-        .orElseThrow(() -> {
-          log.warn("Cannot delete — workspace not found by number: {}", number);
-          return new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
-        });
+    Optional<Workspace> workspaceOpt = workspaceRepository.findByNumber(number);
+    if (workspaceOpt.isEmpty()) {
+      log.warn("Cannot delete — workspace not found by number: {}", number);
+      throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
+    }
+    Workspace workspace = workspaceOpt.get();
 
     boolean hasActiveBookings = workspace.getBookings() != null
         && workspace.getBookings().stream()
