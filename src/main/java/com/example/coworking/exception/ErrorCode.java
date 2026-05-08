@@ -25,7 +25,9 @@ public enum ErrorCode {
   CAN_NOT_CONFIRM("Only pending bookings can be confirmed", "CAN_NOT_CONFIRM"),
   CAN_NOT_UPDATE("Only canceled or completed bookings can be updated", "CAN_NOT_UPDATE"),
   WORKSPACE_NOT_AVAILABLE(
-      "Workspace is not available for the selected time period", "WORKSPACE_NOT_AVAILABLE");
+      "Workspace is not available for the selected time period", "WORKSPACE_NOT_AVAILABLE"),
+  ACCESS_DENIED("Access denied", "ACCESS_DENIED"),
+  TASK_NOT_FOUND("Task not found", "TASK_NOT_FOUND");
   private final String message;
   private final String code;
 

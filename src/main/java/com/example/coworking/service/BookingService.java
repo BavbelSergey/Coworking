@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class BookingService {
 
   private final BookingRepository bookingRepository;
@@ -106,7 +105,7 @@ public class BookingService {
           log.warn("Booking not found with id: {}", id);
           return new NotFoundException(ErrorCode.BOOKING_NOT_FOUND);
         });
-    log.info("Successfully fetched booking: id={}, status={}", id, booking.getStatus());
+    log.info("Successfully fetched booking: id={},sts status={}", id, booking.getStatus());
     return bookingMapper.toDto(booking);
   }
 
