@@ -9,7 +9,7 @@ public enum ErrorCode {
   USER_HAS_ACTIVE_BOOKINGS("Can not delete user with active bookings", "USER_HAS_ACTIVE_BOOKINGS"),
   USER_EXISTS_WITH_EMAIL("User exists with this email address", "USER_EXISTS_WITH_EMAIL"),
   WORKSPACE_NOT_FOUND("Workspace not found", "WORKSPACE_NOT_FOUND"),
-  WORKSPACE_EXISTS_WITH_NUMBER("User exists with this phone number", "USER_EXISTS_WITH_NUMBER"),
+  WORKSPACE_EXISTS_WITH_NAME("Workspace exists with this name", "WORKSPACE_EXISTS_WITH_NAME"),
   WORKSPACE_HAS_ACTIVE_BOOKINGS(
       "Can not delete workspace with active bookings", "WORKSPACE_HAS_ACTIVE_BOOKINGS"),
   PAYMENT_EXISTS_FOR_BOOKING(

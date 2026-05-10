@@ -40,6 +40,8 @@ public class User {
   @ToString.Include
   private String phone;
 
+  private String password;
+
   @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
   private List<Booking> bookings = new ArrayList<>();
 

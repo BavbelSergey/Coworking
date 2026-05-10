@@ -2,6 +2,7 @@ package com.example.coworking.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -20,8 +21,12 @@ public class WorkspaceDto {
   @Schema(description = "ID рабочего места", example = "1")
   private Long id;
 
-  @Schema(description = "Номер рабочего места", example = "101")
-  private Integer number;
+  @Schema(description = "Название рабочего места", example = "Meeting Room 101")
+  private String name;
+
+  @Pattern(regexp = "^\\+?[0-9\\s-]{10,15}$", message = "Invalid phone number format")
+  @Schema(description = "Номер телефона рабочего места", example = "+79161234567")
+  private String phoneNumber;
 
   @Schema(description = "Вместимость (количество человек)", example = "4")
   private Integer capacity;

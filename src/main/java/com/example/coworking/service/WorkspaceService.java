@@ -14,6 +14,7 @@ import com.example.coworking.repository.WorkspaceRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -48,18 +49,18 @@ public class WorkspaceService {
       throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
     }
     Workspace workspace = workspaceOpt.get();
-    log.info("Successfully fetched workspace: id={}, number={}", id, workspace.getNumber());
+    log.info("Successfully fetched workspace: id={}, name={}", id, workspace.getName());
     return workspaceMapper.toDto(workspace);
   }
 
   @Transactional
   public WorkspaceDto createWorkspace(WorkspaceDto workspaceDto) {
-    log.info("Creating new workspace: number={}, capacity={}, pricePerHour={}",
-        workspaceDto.getNumber(), workspaceDto.getCapacity(), workspaceDto.getPricePerHour());
+    log.info("Creating new workspace: name={}, capacity={}, pricePerHour={}",
+        workspaceDto.getName(), workspaceDto.getCapacity(), workspaceDto.getPricePerHour());
 
-    if (workspaceRepository.existsByNumber(workspaceDto.getNumber())) {
-      log.warn("Cannot create workspace — number already exists: {}", workspaceDto.getNumber());
-      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER);
+    if (workspaceRepository.existsByName(workspaceDto.getName())) {
+      log.warn("Cannot create workspace — name already exists: {}", workspaceDto.getName());
+      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NAME);
     }
 
     Workspace workspace = workspaceMapper.toEntity(workspaceDto);
@@ -74,15 +75,15 @@ public class WorkspaceService {
     }
 
     Workspace savedWorkspace = workspaceRepository.save(workspace);
-    log.info("Successfully created workspace: id={}, number={}, capacity={}",
-        savedWorkspace.getId(), savedWorkspace.getNumber(), savedWorkspace.getCapacity());
+    log.info("Successfully created workspace: id={}, name={}, capacity={}",
+        savedWorkspace.getId(), savedWorkspace.getName(), savedWorkspace.getCapacity());
     return workspaceMapper.toDto(savedWorkspace);
   }
 
   @Transactional
   public WorkspaceDto updateWorkspace(Long id, WorkspaceDto workspaceDto) {
-    log.info("Updating workspace (full): id={}, number={}, capacity={}, pricePerHour={}",
-        id, workspaceDto.getNumber(), workspaceDto.getCapacity(), workspaceDto.getPricePerHour());
+    log.info("Updating workspace (full): id={}, name={}, capacity={}, pricePerHour={}",
+        id, workspaceDto.getName(), workspaceDto.getCapacity(), workspaceDto.getPricePerHour());
 
     Optional<Workspace> workspaceOpt = workspaceRepository.findById(id);
     if (workspaceOpt.isEmpty()) {
@@ -91,21 +92,22 @@ public class WorkspaceService {
     }
     Workspace workspace = workspaceOpt.get();
 
-    if (!workspace.getNumber().equals(workspaceDto.getNumber())
-        && workspaceRepository.existsByNumber(workspaceDto.getNumber())) {
-      log.warn("Cannot update workspace id={} — number already taken: {}",
-          id, workspaceDto.getNumber());
-      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER);
+    if (!Objects.equals(workspace.getName(), workspaceDto.getName())
+        && workspaceRepository.existsByName(workspaceDto.getName())) {
+      log.warn("Cannot update workspace id={} — name already taken: {}",
+          id, workspaceDto.getName());
+      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NAME);
     }
 
-    workspace.setNumber(workspaceDto.getNumber());
+    String oldName = workspace.getName();
+    workspace.setName(workspaceDto.getName());
+    workspace.setPhoneNumber(workspaceDto.getPhoneNumber());
     workspace.setCapacity(workspaceDto.getCapacity());
     workspace.setPricePerHour(workspaceDto.getPricePerHour());
-    Integer oldNumber = workspace.getNumber();
 
     WorkspaceDto result = getWorkspaceDto(workspaceDto, workspace);
-    log.info("Successfully updated workspace (full): id={}, oldNumber={}, newNumber={}",
-        id, oldNumber, workspaceDto.getNumber());
+    log.info("Successfully updated workspace (full): id={}, oldName={}, newName={}",
+        id, oldName, workspaceDto.getName());
     return result;
   }
 
@@ -132,19 +134,19 @@ public class WorkspaceService {
     }
     Workspace workspace = workspaceOpt.get();
 
-    if (workspaceDto.getNumber() != null
-        && !workspace.getNumber().equals(workspaceDto.getNumber())
-        && workspaceRepository.existsByNumber(workspaceDto.getNumber())) {
-      log.warn("Cannot partially update workspace id={} — number already taken: {}",
-          id, workspaceDto.getNumber());
-      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER);
+    if (workspaceDto.getName() != null
+        && !Objects.equals(workspace.getName(), workspaceDto.getName())
+        && workspaceRepository.existsByName(workspaceDto.getName())) {
+      log.warn("Cannot partially update workspace id={} — name already taken: {}",
+          id, workspaceDto.getName());
+      throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NAME);
     }
 
-    Integer oldNumber = workspace.getNumber();
+    String oldName = workspace.getName();
     workspaceMapper.updateEntity(workspaceDto, workspace);
     Workspace updatedWorkspace = workspaceRepository.save(workspace);
-    log.info("Successfully partially updated workspace: id={}, oldNumber={}, newNumber={}",
-        id, oldNumber, updatedWorkspace.getNumber());
+    log.info("Successfully partially updated workspace: id={}, oldName={}, newName={}",
+        id, oldName, updatedWorkspace.getName());
     return workspaceMapper.toDto(updatedWorkspace);
   }
 
@@ -164,13 +166,13 @@ public class WorkspaceService {
         .anyMatch(booking -> booking.getStatus() == BookingStatus.CONFIRMED);
 
     if (hasActiveBookings) {
-      log.warn("Cannot delete workspace id={}, number={} — has active (CONFIRMED) bookings",
-          id, workspace.getNumber());
+      log.warn("Cannot delete workspace id={}, name={} — has active (CONFIRMED) bookings",
+          id, workspace.getName());
       throw new ConflictException(ErrorCode.WORKSPACE_HAS_ACTIVE_BOOKINGS);
     }
 
     workspaceRepository.delete(workspace);
-    log.info("Successfully deleted workspace: id={}, number={}", id, workspace.getNumber());
+    log.info("Successfully deleted workspace: id={}, name={}", id, workspace.getName());
   }
 
   public List<WorkspaceDto> findAvailableWorkspaces(Integer minCapacity, Double maxPrice,
@@ -269,20 +271,20 @@ public class WorkspaceService {
     return workspaceMapper.toDto(workspace);
   }
 
-  public boolean existsByNumber(Integer number) {
-    log.debug("Checking if workspace exists by number: {}", number);
-    boolean exists = workspaceRepository.existsByNumber(number);
-    log.debug("Workspace with number {} exists: {}", number, exists);
+  public boolean existsByName(String name) {
+    log.debug("Checking if workspace exists by name: {}", name);
+    boolean exists = workspaceRepository.existsByName(name);
+    log.debug("Workspace with name {} exists: {}", name, exists);
     return exists;
   }
 
   @Transactional
-  public void deleteByNumber(Integer number) {
-    log.info("Attempting to delete workspace by number: {}", number);
+  public void deleteByName(String name) {
+    log.info("Attempting to delete workspace by name: {}", name);
 
-    Optional<Workspace> workspaceOpt = workspaceRepository.findByNumber(number);
+    Optional<Workspace> workspaceOpt = workspaceRepository.findByName(name);
     if (workspaceOpt.isEmpty()) {
-      log.warn("Cannot delete — workspace not found by number: {}", number);
+      log.warn("Cannot delete — workspace not found by name: {}", name);
       throw new NotFoundException(ErrorCode.WORKSPACE_NOT_FOUND);
     }
     Workspace workspace = workspaceOpt.get();
@@ -292,12 +294,12 @@ public class WorkspaceService {
         .anyMatch(booking -> booking.getStatus() == BookingStatus.CONFIRMED);
 
     if (hasActiveBookings) {
-      log.warn("Cannot delete workspace number={}, id={} — has active (CONFIRMED) bookings",
-          number, workspace.getId());
+      log.warn("Cannot delete workspace name={}, id={} — has active (CONFIRMED) bookings",
+          name, workspace.getId());
       throw new ConflictException(ErrorCode.WORKSPACE_HAS_ACTIVE_BOOKINGS);
     }
 
-    workspaceRepository.deleteByNumber(number);
-    log.info("Successfully deleted workspace by number: {}", number);
+    workspaceRepository.deleteByName(name);
+    log.info("Successfully deleted workspace by name: {}", name);
   }
 }

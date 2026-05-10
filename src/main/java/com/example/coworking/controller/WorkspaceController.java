@@ -39,7 +39,7 @@ public class WorkspaceController {
 
   @Operation(
       summary = "Получить список рабочих мест",
-      description = "Возвращает все рабочие места с пагинацией и сортировкой по номеру"
+      description = "Возвращает все рабочие места с пагинацией и сортировкой по названию"
   )
   @GetMapping
   public Page<WorkspaceDto> getAllWorkspaces(
@@ -63,7 +63,7 @@ public class WorkspaceController {
   @Operation(
       summary = "Создать рабочее место",
       description = "Создаёт новое рабочее место. "
-          + "Номер должен быть уникальным. Кеш поиска сбрасывается"
+          + "Название должно быть уникальным. Кеш поиска сбрасывается"
   )
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
@@ -82,7 +82,7 @@ public class WorkspaceController {
   @Operation(
       summary = "Полностью обновить рабочее место",
       description = "Обновляет все поля рабочего места. "
-          + "Номер должен быть уникальным. Кеш поиска сбрасывается"
+          + "Название должно быть уникальным. Кеш поиска сбрасывается"
   )
   @PutMapping("/{id}")
   public WorkspaceDto updateWorkspace(
@@ -103,7 +103,7 @@ public class WorkspaceController {
   @Operation(
       summary = "Частично обновить рабочее место",
       description = "Обновляет только переданные поля. "
-          + "Можно передать только номер, или только цену, и т.д. "
+          + "Можно передать только название, или только цену, и т.д. "
           + "Кеш поиска сбрасывается"
   )
   @PatchMapping("/{id}")
@@ -220,28 +220,28 @@ public class WorkspaceController {
   }
 
   @Operation(
-      summary = "Проверить существование номера",
-      description = "Возвращает true, если рабочее место с таким номером уже существует"
+      summary = "Проверить существование названия",
+      description = "Возвращает true, если рабочее место с таким названием уже существует"
   )
-  @GetMapping("/exists/number/{number}")
-  public Boolean existsByNumber(
-      @Parameter(description = "Номер рабочего места", example = "101")
-      @PathVariable @Positive(message = "Workspace number must be positive") Integer number
+  @GetMapping("/exists/name/{name}")
+  public Boolean existsByName(
+      @Parameter(description = "Название рабочего места", example = "Meeting Room 101")
+      @PathVariable String name
   ) {
-    return workspaceService.existsByNumber(number);
+    return workspaceService.existsByName(name);
   }
 
   @Operation(
-      summary = "Удалить рабочее место по номеру",
-      description = "Удаляет рабочее место по его номеру. "
+      summary = "Удалить рабочее место по названию",
+      description = "Удаляет рабочее место по его названию. "
           + "Нельзя удалить, если есть активные бронирования"
   )
-  @DeleteMapping("/number/{number}")
+  @DeleteMapping("/name/{name}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteByNumber(
-      @Parameter(description = "Номер рабочего места", example = "101")
-      @PathVariable @Positive(message = "Workspace number must be positive") Integer number
+  public void deleteByName(
+      @Parameter(description = "Название рабочего места", example = "Meeting Room 101")
+      @PathVariable String name
   ) {
-    workspaceService.deleteByNumber(number);
+    workspaceService.deleteByName(name);
   }
 }

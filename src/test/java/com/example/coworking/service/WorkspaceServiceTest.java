@@ -67,14 +67,14 @@ class WorkspaceServiceTest {
 
     workspace = new Workspace();
     workspace.setId(1L);
-    workspace.setNumber(101);
+    workspace.setName("Workspace 101");
     workspace.setCapacity(4);
     workspace.setPricePerHour(BigDecimal.valueOf(500.00));
     workspace.setAmenities(new ArrayList<>());
 
     workspaceDto = new WorkspaceDto();
     workspaceDto.setId(1L);
-    workspaceDto.setNumber(101);
+    workspaceDto.setName("Workspace 101");
     workspaceDto.setCapacity(4);
     workspaceDto.setPricePerHour(BigDecimal.valueOf(500.00));
     workspaceDto.setAmenities(List.of(amenityDto));
@@ -134,7 +134,7 @@ class WorkspaceServiceTest {
       WorkspaceDto result = workspaceService.getWorkspaceById(1L);
 
       assertNotNull(result);
-      assertEquals(101, result.getNumber());
+      assertEquals("Workspace 101", result.getName());
     }
 
     @Test
@@ -157,7 +157,7 @@ class WorkspaceServiceTest {
     @Test
     @DisplayName("Should create workspace successfully with amenities")
     void shouldCreateWorkspace_WithAmenities() {
-      when(workspaceRepository.existsByNumber(101)).thenReturn(false);
+      when(workspaceRepository.existsByName("Workspace 101")).thenReturn(false);
       when(workspaceMapper.toEntity(workspaceDto)).thenReturn(workspace);
       when(amenityRepository.findAllById(anyList())).thenReturn(List.of(amenity));
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
@@ -166,14 +166,14 @@ class WorkspaceServiceTest {
       WorkspaceDto result = workspaceService.createWorkspace(workspaceDto);
 
       assertNotNull(result);
-      assertEquals(101, result.getNumber());
+      assertEquals("Workspace 101", result.getName());
     }
 
     @Test
     @DisplayName("Should create workspace without amenities")
     void shouldCreateWorkspace_WithoutAmenities() {
       workspaceDto.setAmenities(null);
-      when(workspaceRepository.existsByNumber(101)).thenReturn(false);
+      when(workspaceRepository.existsByName("Workspace 101")).thenReturn(false);
       when(workspaceMapper.toEntity(workspaceDto)).thenReturn(workspace);
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
       when(workspaceMapper.toDto(workspace)).thenReturn(workspaceDto);
@@ -188,7 +188,7 @@ class WorkspaceServiceTest {
     @DisplayName("Should create workspace with empty amenities list")
     void shouldCreateWorkspace_WithEmptyAmenities() {
       workspaceDto.setAmenities(Collections.emptyList());
-      when(workspaceRepository.existsByNumber(101)).thenReturn(false);
+      when(workspaceRepository.existsByName("Workspace 101")).thenReturn(false);
       when(workspaceMapper.toEntity(workspaceDto)).thenReturn(workspace);
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
       when(workspaceMapper.toDto(workspace)).thenReturn(workspaceDto);
@@ -200,13 +200,13 @@ class WorkspaceServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw ConflictException when number exists")
-    void shouldThrowException_WhenNumberExists() {
-      when(workspaceRepository.existsByNumber(101)).thenReturn(true);
+    @DisplayName("Should throw ConflictException when name exists")
+    void shouldThrowException_WhenNameExists() {
+      when(workspaceRepository.existsByName("Workspace 101")).thenReturn(true);
 
       ConflictException ex = assertThrows(ConflictException.class,
           () -> workspaceService.createWorkspace(workspaceDto));
-      assertEquals(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER, ex.getErrorCode());
+      assertEquals(ErrorCode.WORKSPACE_EXISTS_WITH_NAME, ex.getErrorCode());
     }
   }
 
@@ -220,9 +220,9 @@ class WorkspaceServiceTest {
     @DisplayName("Should update workspace when amenities is null in updateDto")
     void shouldUpdateWorkspace_WhenAmenitiesNull() {
       workspaceDto.setAmenities(null); // amenities = null
-      workspaceDto.setNumber(102);
+      workspaceDto.setName("Workspace 102");
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
-      when(workspaceRepository.existsByNumber(102)).thenReturn(false);
+      when(workspaceRepository.existsByName("Workspace 102")).thenReturn(false);
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
       when(workspaceMapper.toDto(workspace)).thenReturn(workspaceDto);
 
@@ -236,9 +236,9 @@ class WorkspaceServiceTest {
     @DisplayName("Should update workspace without changing amenities")
     void shouldUpdateWorkspace_WithoutAmenities() {
       workspaceDto.setAmenities(null);
-      workspaceDto.setNumber(102);
+      workspaceDto.setName("Workspace 102");
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
-      when(workspaceRepository.existsByNumber(102)).thenReturn(false);
+      when(workspaceRepository.existsByName("Workspace 102")).thenReturn(false);
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
       when(workspaceMapper.toDto(workspace)).thenReturn(workspaceDto);
 
@@ -251,9 +251,9 @@ class WorkspaceServiceTest {
     @Test
     @DisplayName("Should update workspace successfully")
     void shouldUpdateWorkspace() {
-      workspaceDto.setNumber(102);
+      workspaceDto.setName("Workspace 102");
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
-      when(workspaceRepository.existsByNumber(102)).thenReturn(false);
+      when(workspaceRepository.existsByName("Workspace 102")).thenReturn(false);
       when(amenityRepository.findAllById(anyList())).thenReturn(List.of(amenity));
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
       when(workspaceMapper.toDto(workspace)).thenReturn(workspaceDto);
@@ -274,22 +274,22 @@ class WorkspaceServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw ConflictException when new number exists")
-    void shouldThrowException_WhenNumberExists() {
-      workspaceDto.setNumber(102);
+    @DisplayName("Should throw ConflictException when new name exists")
+    void shouldThrowException_WhenNameExists() {
+      workspaceDto.setName("Workspace 102");
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
-      when(workspaceRepository.existsByNumber(102)).thenReturn(true);
+      when(workspaceRepository.existsByName("Workspace 102")).thenReturn(true);
 
       ConflictException ex = assertThrows(ConflictException.class,
           () -> workspaceService.updateWorkspace(1L, workspaceDto));
-      assertEquals(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER, ex.getErrorCode());
+      assertEquals(ErrorCode.WORKSPACE_EXISTS_WITH_NAME, ex.getErrorCode());
     }
 
 
     @Test
-    @DisplayName("Should allow update when number unchanged")
-    void shouldAllowUpdate_WhenNumberUnchanged() {
-      workspaceDto.setNumber(101); // same
+    @DisplayName("Should allow update when name unchanged")
+    void shouldAllowUpdate_WhenNameUnchanged() {
+      workspaceDto.setName("Workspace 101"); // same
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
       when(amenityRepository.findAllById(anyList())).thenReturn(List.of(amenity));
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
@@ -298,7 +298,7 @@ class WorkspaceServiceTest {
       WorkspaceDto result = workspaceService.updateWorkspace(1L, workspaceDto);
 
       assertNotNull(result);
-      verify(workspaceRepository, never()).existsByNumber(any());
+      verify(workspaceRepository, never()).existsByName(any());
     }
   }
 
@@ -309,11 +309,11 @@ class WorkspaceServiceTest {
   class PartialUpdateWorkspace {
 
     @Test
-    @DisplayName("Should partially update when new number does not exist")
-    void shouldPartialUpdate_WhenNewNumberNotExists() {
-      workspaceDto.setNumber(102); // меняем номер, но он не занят
+    @DisplayName("Should partially update when new name does not exist")
+    void shouldPartialUpdate_WhenNewNameNotExists() {
+      workspaceDto.setName("Workspace 102"); // меняем название, но оно не занято
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
-      when(workspaceRepository.existsByNumber(102)).thenReturn(false); // ← возвращает false
+      when(workspaceRepository.existsByName("Workspace 102")).thenReturn(false); // ← возвращает false
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
       when(workspaceMapper.toDto(workspace)).thenReturn(workspaceDto);
 
@@ -326,7 +326,7 @@ class WorkspaceServiceTest {
     @Test
     @DisplayName("Should partially update workspace successfully")
     void shouldPartialUpdateWorkspace() {
-      workspaceDto.setNumber(null);
+      workspaceDto.setName(null);
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
       when(workspaceMapper.toDto(workspace)).thenReturn(workspaceDto);
@@ -348,22 +348,22 @@ class WorkspaceServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw ConflictException when new number exists")
-    void shouldThrowException_WhenNumberExists() {
-      workspace.setNumber(101);
-      workspaceDto.setNumber(102);
+    @DisplayName("Should throw ConflictException when new name exists")
+    void shouldThrowException_WhenNameExists() {
+      workspace.setName("Workspace 101");
+      workspaceDto.setName("Workspace 102");
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
-      when(workspaceRepository.existsByNumber(102)).thenReturn(true);
+      when(workspaceRepository.existsByName("Workspace 102")).thenReturn(true);
 
       ConflictException ex = assertThrows(ConflictException.class,
           () -> workspaceService.partialUpdateWorkspace(1L, workspaceDto));
-      assertEquals(ErrorCode.WORKSPACE_EXISTS_WITH_NUMBER, ex.getErrorCode());
+      assertEquals(ErrorCode.WORKSPACE_EXISTS_WITH_NAME, ex.getErrorCode());
     }
 
     @Test
-    @DisplayName("Should allow update when number unchanged")
-    void shouldAllowUpdate_WhenNumberUnchanged() {
-      workspaceDto.setNumber(101); // same
+    @DisplayName("Should allow update when name unchanged")
+    void shouldAllowUpdate_WhenNameUnchanged() {
+      workspaceDto.setName("Workspace 101"); // same
       when(workspaceRepository.findById(1L)).thenReturn(Optional.of(workspace));
       when(workspaceRepository.save(workspace)).thenReturn(workspace);
       when(workspaceMapper.toDto(workspace)).thenReturn(workspaceDto);
@@ -371,7 +371,7 @@ class WorkspaceServiceTest {
       WorkspaceDto result = workspaceService.partialUpdateWorkspace(1L, workspaceDto);
 
       assertNotNull(result);
-      verify(workspaceRepository, never()).existsByNumber(any());
+      verify(workspaceRepository, never()).existsByName(any());
     }
   }
 
@@ -587,7 +587,7 @@ class WorkspaceServiceTest {
     void shouldFilterOut_WhenWorkspaceHasNullAmenities() {
       Workspace workspaceNoAmenities = new Workspace();
       workspaceNoAmenities.setId(2L);
-      workspaceNoAmenities.setNumber(102);
+      workspaceNoAmenities.setName("Workspace 102");
       workspaceNoAmenities.setAmenities(null); // amenities = null
 
       when(workspaceRepository.findAvailableWorkspaces(any(), any()))
@@ -939,93 +939,93 @@ class WorkspaceServiceTest {
     }
   }
 
-  // ==================== existsByNumber ====================
+  // ==================== existsByName ====================
 
   @Nested
-  @DisplayName("existsByNumber")
-  class ExistsByNumber {
+  @DisplayName("existsByName")
+  class ExistsByName {
 
     @Test
-    @DisplayName("Should return false when number does not exist")
-    void shouldReturnFalse_WhenNumberNotExists() {
-      when(workspaceRepository.existsByNumber(999)).thenReturn(false);
+    @DisplayName("Should return false when name does not exist")
+    void shouldReturnFalse_WhenNameNotExists() {
+      when(workspaceRepository.existsByName("Missing workspace")).thenReturn(false);
 
-      boolean result = workspaceService.existsByNumber(999);
+      boolean result = workspaceService.existsByName("Missing workspace");
 
       assertFalse(result);
     }
 
     @Test
-    @DisplayName("Should return true when number exists")
+    @DisplayName("Should return true when name exists")
     void shouldReturnTrue() {
-      when(workspaceRepository.existsByNumber(101)).thenReturn(true);
+      when(workspaceRepository.existsByName("Workspace 101")).thenReturn(true);
 
-      boolean result = workspaceService.existsByNumber(101);
+      boolean result = workspaceService.existsByName("Workspace 101");
 
       assertTrue(result);
     }
 
     @Test
-    @DisplayName("Should return false when number does not exist")
+    @DisplayName("Should return false when name does not exist")
     void shouldReturnFalse() {
-      when(workspaceRepository.existsByNumber(999)).thenReturn(false);
+      when(workspaceRepository.existsByName("Missing workspace")).thenReturn(false);
 
-      boolean result = workspaceService.existsByNumber(999);
+      boolean result = workspaceService.existsByName("Missing workspace");
 
       assertFalse(result);
     }
   }
 
-  // ==================== deleteByNumber ====================
+  // ==================== deleteByName ====================
 
   @Nested
-  @DisplayName("deleteByNumber")
-  class DeleteByNumber {
+  @DisplayName("deleteByName")
+  class DeleteByName {
 
     @Test
-    @DisplayName("Should delete by number when bookings exist but none are CONFIRMED")
-    void shouldDeleteByNumber_WhenBookingsNotConfirmed() {
+    @DisplayName("Should delete by name when bookings exist but none are CONFIRMED")
+    void shouldDeleteByName_WhenBookingsNotConfirmed() {
       Booking pendingBooking = new Booking();
       pendingBooking.setStatus(BookingStatus.PENDING);
       Booking cancelledBooking = new Booking();
       cancelledBooking.setStatus(BookingStatus.CANCELLED);
       workspace.setBookings(List.of(pendingBooking, cancelledBooking));
-      when(workspaceRepository.findByNumber(101)).thenReturn(Optional.of(workspace));
+      when(workspaceRepository.findByName("Workspace 101")).thenReturn(Optional.of(workspace));
 
-      workspaceService.deleteByNumber(101);
+      workspaceService.deleteByName("Workspace 101");
 
-      verify(workspaceRepository).deleteByNumber(101);
+      verify(workspaceRepository).deleteByName("Workspace 101");
     }
 
     @Test
-    @DisplayName("Should delete by number when bookings is null")
-    void shouldDeleteByNumber_WhenBookingsNull() {
+    @DisplayName("Should delete by name when bookings is null")
+    void shouldDeleteByName_WhenBookingsNull() {
       workspace.setBookings(null);
-      when(workspaceRepository.findByNumber(101)).thenReturn(Optional.of(workspace));
+      when(workspaceRepository.findByName("Workspace 101")).thenReturn(Optional.of(workspace));
 
-      workspaceService.deleteByNumber(101);
+      workspaceService.deleteByName("Workspace 101");
 
-      verify(workspaceRepository).deleteByNumber(101);
+      verify(workspaceRepository).deleteByName("Workspace 101");
     }
 
     @Test
-    @DisplayName("Should delete workspace by number successfully")
-    void shouldDeleteByNumber() {
+    @DisplayName("Should delete workspace by name successfully")
+    void shouldDeleteByName() {
       workspace.setBookings(Collections.emptyList());
-      when(workspaceRepository.findByNumber(101)).thenReturn(Optional.of(workspace));
+      when(workspaceRepository.findByName("Workspace 101")).thenReturn(Optional.of(workspace));
 
-      workspaceService.deleteByNumber(101);
+      workspaceService.deleteByName("Workspace 101");
 
-      verify(workspaceRepository).deleteByNumber(101);
+      verify(workspaceRepository).deleteByName("Workspace 101");
     }
 
     @Test
     @DisplayName("Should throw NotFoundException when not found")
     void shouldThrowException_WhenNotFound() {
-      when(workspaceRepository.findByNumber(999)).thenReturn(Optional.empty());
+      when(workspaceRepository.findByName("Missing workspace")).thenReturn(Optional.empty());
 
       NotFoundException ex = assertThrows(NotFoundException.class,
-          () -> workspaceService.deleteByNumber(999));
+          () -> workspaceService.deleteByName("Missing workspace"));
       assertEquals(ErrorCode.WORKSPACE_NOT_FOUND, ex.getErrorCode());
     }
 
@@ -1035,10 +1035,10 @@ class WorkspaceServiceTest {
       Booking confirmedBooking = new Booking();
       confirmedBooking.setStatus(BookingStatus.CONFIRMED);
       workspace.setBookings(List.of(confirmedBooking));
-      when(workspaceRepository.findByNumber(101)).thenReturn(Optional.of(workspace));
+      when(workspaceRepository.findByName("Workspace 101")).thenReturn(Optional.of(workspace));
 
       ConflictException ex = assertThrows(ConflictException.class,
-          () -> workspaceService.deleteByNumber(101));
+          () -> workspaceService.deleteByName("Workspace 101"));
       assertEquals(ErrorCode.WORKSPACE_HAS_ACTIVE_BOOKINGS, ex.getErrorCode());
     }
   }

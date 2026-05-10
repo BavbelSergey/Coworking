@@ -33,6 +33,7 @@ public class UserMapper {
     user.setName(createDto.getName());
     user.setEmail(createDto.getEmail());
     user.setPhone(createDto.getPhone());
+    user.setPassword(createDto.getPassword());
 
     return user;
   }

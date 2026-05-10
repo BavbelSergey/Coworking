@@ -42,7 +42,10 @@ public class Workspace {
 
   @Column(unique = true)
   @ToString.Include
-  private Integer number;
+  private String name;
+
+  @ToString.Include
+  private String phoneNumber;
 
   @ToString.Include
   private Integer capacity;

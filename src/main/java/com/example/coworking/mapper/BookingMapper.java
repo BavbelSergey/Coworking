@@ -35,7 +35,7 @@ public class BookingMapper {
 
     if (booking.getWorkspace() != null) {
       dto.setWorkspaceId(booking.getWorkspace().getId());
-      dto.setWorkspaceNumber(booking.getWorkspace().getNumber());
+      dto.setWorkspaceName(booking.getWorkspace().getName());
     }
 
     if (booking.getPayment() != null) {

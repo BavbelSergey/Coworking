@@ -21,12 +21,12 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
   @EntityGraph(attributePaths = {"amenities"})
   Page<Workspace> findAll(@org.jspecify.annotations.NonNull Pageable pageable);
 
-  boolean existsByNumber(Integer number);
+  boolean existsByName(String name);
 
   @EntityGraph(attributePaths = {"amenities"})
-  Optional<Workspace> findByNumber(Integer number);
+  Optional<Workspace> findByName(String name);
 
-  void deleteByNumber(Integer number);
+  void deleteByName(String name);
 
   @EntityGraph(attributePaths = {"amenities"})
   List<Workspace> findByCapacityGreaterThanEqual(Integer capacity);

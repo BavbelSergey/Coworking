@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final UserMapper userMapper;
+  private final PasswordEncoder passwordEncoder;
 
   public Page<UserDto> getAllUsers(Pageable pageable) {
     log.debug("Fetching all users with pageable: {}", pageable);
@@ -71,6 +73,7 @@ public class UserService {
     }
 
     User user = userMapper.toEntity(createDto);
+    user.setPassword(passwordEncoder.encode(createDto.getPassword()));
     User savedUser = userRepository.save(user);
     log.info("Successfully created user: id={}, email={}, phone={}",
         savedUser.getId(), savedUser.getEmail(), savedUser.getPhone());

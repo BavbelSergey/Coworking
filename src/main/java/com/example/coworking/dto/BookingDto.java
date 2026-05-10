@@ -51,6 +51,6 @@ public class BookingDto {
   @Schema(description = "Email пользователя", example = "ivan@example.com")
   private String userEmail;
 
-  @Schema(description = "Номер рабочего места", example = "101")
-  private Integer workspaceNumber;
+  @Schema(description = "Название рабочего места", example = "Meeting Room 101")
+  private String workspaceName;
 }

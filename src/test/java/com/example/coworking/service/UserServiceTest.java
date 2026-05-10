@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +42,8 @@ class UserServiceTest {
   private UserRepository userRepository;
   @Mock
   private UserMapper userMapper;
+  @Mock
+  private PasswordEncoder passwordEncoder;
 
   @InjectMocks
   private UserService userService;
@@ -68,6 +71,7 @@ class UserServiceTest {
     createDto.setName("Иван Петров");
     createDto.setEmail("ivan@example.com");
     createDto.setPhone("+79161234567");
+    createDto.setPassword("strongPassword123");
 
     updateDto = new UserUpdateDto();
     updateDto.setName("Иван Сидоров");
@@ -77,7 +81,7 @@ class UserServiceTest {
 
   @AfterEach
   void tearDown() {
-    reset(userRepository, userMapper);
+    reset(userRepository, userMapper, passwordEncoder);
   }
 
   // ==================== getAllUsers ====================
@@ -184,6 +188,7 @@ class UserServiceTest {
       when(userRepository.existsByEmail("ivan@example.com")).thenReturn(false);
       when(userRepository.existsByPhone("+79161234567")).thenReturn(false);
       when(userMapper.toEntity(createDto)).thenReturn(user);
+      when(passwordEncoder.encode("strongPassword123")).thenReturn("encodedPassword");
       when(userRepository.save(user)).thenReturn(user);
       when(userMapper.toDto(user)).thenReturn(userDto);
 
@@ -199,6 +204,7 @@ class UserServiceTest {
       createDto.setPhone(null);
       when(userRepository.existsByEmail("ivan@example.com")).thenReturn(false);
       when(userMapper.toEntity(createDto)).thenReturn(user);
+      when(passwordEncoder.encode("strongPassword123")).thenReturn("encodedPassword");
       when(userRepository.save(user)).thenReturn(user);
       when(userMapper.toDto(user)).thenReturn(userDto);
 

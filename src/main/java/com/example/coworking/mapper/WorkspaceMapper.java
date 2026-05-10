@@ -16,8 +16,9 @@ public class WorkspaceMapper {
       return null;
     }
 
-    return WorkspaceDto.builder().id(workspace.getId()).number(workspace.getNumber())
-        .capacity(workspace.getCapacity()).pricePerHour(workspace.getPricePerHour())
+    return WorkspaceDto.builder().id(workspace.getId()).name(workspace.getName())
+        .phoneNumber(workspace.getPhoneNumber()).capacity(workspace.getCapacity())
+        .pricePerHour(workspace.getPricePerHour())
         .amenities(mapAmenitiesToDto(workspace.getAmenities())).build();
   }
 
@@ -26,8 +27,8 @@ public class WorkspaceMapper {
       return null;
     }
 
-    return Workspace.builder().id(dto.getId()).number(dto.getNumber()).capacity(dto.getCapacity())
-        .pricePerHour(dto.getPricePerHour()).build();
+    return Workspace.builder().id(dto.getId()).name(dto.getName()).phoneNumber(dto.getPhoneNumber())
+        .capacity(dto.getCapacity()).pricePerHour(dto.getPricePerHour()).build();
   }
 
   public void updateEntity(WorkspaceDto dto, Workspace workspace) {
@@ -35,8 +36,11 @@ public class WorkspaceMapper {
       return;
     }
 
-    if (dto.getNumber() != null) {
-      workspace.setNumber(dto.getNumber());
+    if (dto.getName() != null) {
+      workspace.setName(dto.getName());
+    }
+    if (dto.getPhoneNumber() != null) {
+      workspace.setPhoneNumber(dto.getPhoneNumber());
     }
     if (dto.getCapacity() != null) {
       workspace.setCapacity(dto.getCapacity());

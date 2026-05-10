@@ -74,7 +74,7 @@ class BookingServiceTest {
 
     workspace = new Workspace();
     workspace.setId(1L);
-    workspace.setNumber(101);
+    workspace.setName("Workspace 101");
 
     booking = new Booking();
     booking.setId(1L);
