@@ -27,6 +27,8 @@ public enum ErrorCode {
   WORKSPACE_NOT_AVAILABLE(
       "Workspace is not available for the selected time period", "WORKSPACE_NOT_AVAILABLE"),
   ACCESS_DENIED("Access denied", "ACCESS_DENIED"),
+  EXECUTION_FAILED("Execution failed", "EXECUTION_FAILED"),
+  EXECUTION_INTERRUPTED("Execution interrupted", "EXECUTION_INTERRUPTED"),
   TASK_NOT_FOUND("Task not found", "TASK_NOT_FOUND");
   private final String message;
   private final String code;
