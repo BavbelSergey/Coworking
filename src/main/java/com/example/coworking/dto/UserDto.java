@@ -1,5 +1,6 @@
 package com.example.coworking.dto;
 
+import com.example.coworking.model.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,4 +25,7 @@ public class UserDto {
 
   @Schema(description = "Номер телефона", example = "+79161234567")
   private String phone;
+
+  @Schema(description = "Роль пользователя", example = "USER")
+  private UserRole role;
 }

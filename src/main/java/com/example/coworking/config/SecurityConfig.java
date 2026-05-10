@@ -1,5 +1,6 @@
 package com.example.coworking.config;
 
+import com.example.coworking.model.UserRole;
 import com.example.coworking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,14 +24,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final UserRepository userRepository;
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
+      JwtAuthenticationFilter jwtAuthenticationFilter
+  ) throws Exception {
     return http
         .csrf(AbstractHttpConfigurer::disable)
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .sessionManagement(session ->
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
                 "/api/auth/**",
@@ -40,6 +44,19 @@ public class SecurityConfig {
                 "/error"
             ).permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/workspaces/**").hasAnyRole("ADMIN", "USER")
+            .requestMatchers(HttpMethod.GET, "/api/amenities/**").hasAnyRole("ADMIN", "USER")
+            .requestMatchers(HttpMethod.POST, "/api/bookings").hasAnyRole("ADMIN", "USER")
+            .requestMatchers(HttpMethod.POST, "/api/bookings/*/cancel").hasAnyRole("ADMIN", "USER")
+            .requestMatchers(HttpMethod.POST, "/api/payments").hasAnyRole("ADMIN", "USER")
+            .requestMatchers(HttpMethod.GET, "/api/payments/check/booking/**")
+            .hasAnyRole("ADMIN", "USER")
+            .requestMatchers("/api/users/**").hasRole("ADMIN")
+            .requestMatchers("/api/workspaces/**").hasRole("ADMIN")
+            .requestMatchers("/api/amenities/**").hasRole("ADMIN")
+            .requestMatchers("/api/bookings/**").hasRole("ADMIN")
+            .requestMatchers("/api/payments/**").hasRole("ADMIN")
+            .requestMatchers("/api/async-tasks/**", "/api/counter/**").hasRole("ADMIN")
             .anyRequest().authenticated()
         )
         .authenticationProvider(authenticationProvider())
@@ -60,7 +77,7 @@ public class SecurityConfig {
         .map(user -> org.springframework.security.core.userdetails.User
             .withUsername(user.getEmail())
             .password(user.getPassword())
-            .authorities("USER")
+            .authorities((user.getRole() == null ? UserRole.USER : user.getRole()).getAuthority())
             .build())
         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
   }

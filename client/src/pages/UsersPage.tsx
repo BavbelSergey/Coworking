@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Modal } from '../components/ui/Modal'
+import { Select } from '../components/ui/Select'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table'
 import { users } from '../lib/api'
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -19,6 +20,7 @@ export function UsersPage() {
     email: '',
     phone: '',
     password: '',
+    role: 'USER',
   })
 
   const { data, isLoading } = useSWR<Page<User>>(
@@ -65,7 +67,7 @@ export function UsersPage() {
       setFormData({ ...user, password: '' })
     } else {
       setEditingUser(null)
-      setFormData({ name: '', email: '', phone: '', password: '' })
+      setFormData({ name: '', email: '', phone: '', password: '', role: 'USER' })
     }
     setIsModalOpen(true)
   }
@@ -73,7 +75,7 @@ export function UsersPage() {
   const closeModal = () => {
     setIsModalOpen(false)
     setEditingUser(null)
-    setFormData({ name: '', email: '', phone: '', password: '' })
+    setFormData({ name: '', email: '', phone: '', password: '', role: 'USER' })
   }
 
   return (
@@ -120,6 +122,7 @@ export function UsersPage() {
                     <TableHead>Имя</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Телефон</TableHead>
+                    <TableHead>Роль</TableHead>
                     <TableHead className="text-right">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -130,6 +133,7 @@ export function UsersPage() {
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.phone}</TableCell>
+                      <TableCell>{user.role === 'ADMIN' ? 'Admin' : 'User'}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
@@ -217,6 +221,16 @@ export function UsersPage() {
               required
             />
           )}
+          <Select
+            label="Роль"
+            value={formData.role ?? 'USER'}
+            onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
+            options={[
+              { value: 'USER', label: 'User' },
+              { value: 'ADMIN', label: 'Admin' },
+            ]}
+            disabled={!editingUser}
+          />
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={closeModal}>
               Отмена
