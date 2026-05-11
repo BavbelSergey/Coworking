@@ -1,5 +1,6 @@
 package com.example.coworking.dto;
 
+import com.example.coworking.model.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -23,4 +24,7 @@ public class UserUpdateDto {
 
   @Schema(description = "Новый номер телефона", example = "+79169876543")
   private String phone;
+
+  @Schema(description = "Новая роль пользователя", example = "USER")
+  private UserRole role;
 }

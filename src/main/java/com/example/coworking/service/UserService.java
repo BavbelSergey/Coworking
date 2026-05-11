@@ -8,6 +8,7 @@ import com.example.coworking.exception.ErrorCode;
 import com.example.coworking.exception.NotFoundException;
 import com.example.coworking.mapper.UserMapper;
 import com.example.coworking.model.User;
+import com.example.coworking.model.UserRole;
 import com.example.coworking.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,7 @@ public class UserService {
 
     User user = userMapper.toEntity(createDto);
     user.setPassword(passwordEncoder.encode(createDto.getPassword()));
+    user.setRole(UserRole.USER);
     User savedUser = userRepository.save(user);
     log.info("Successfully created user: id={}, email={}, phone={}",
         savedUser.getId(), savedUser.getEmail(), savedUser.getPhone());

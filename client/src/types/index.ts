@@ -1,4 +1,4 @@
-export type UserRole = 'ROLE_USER' | 'ROLE_ADMIN'
+export type UserRole = 'ADMIN' | 'USER'
 
 export interface User {
   id: number
@@ -13,6 +13,7 @@ export interface UserCreate {
   email: string
   phone: string
   password: string
+  role?: UserRole
 }
 
 export interface RegisterRequest {
