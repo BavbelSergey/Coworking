@@ -7,8 +7,9 @@ import { Modal } from '../components/ui/Modal'
 import { Badge } from '../components/ui/Badge'
 import { Select } from '../components/ui/Select'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table'
-import { bookings, users, workspaces } from '../lib/api'
-import { Plus, Trash2, Check, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { bookings, users, workspaces, auth } from '../lib/api'
+import { Plus, Trash2, Check, X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import type { Booking, BookingCreate, User, Workspace, Page, BookingStatus } from '../types'
@@ -27,7 +28,7 @@ const statusLabels: Record<BookingStatus, string> = {
   COMPLETED: 'Завершено',
 }
 
-export function BookingsPage() {
+function AdminBookingsView() {
   const [page, setPage] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState<BookingCreate>({
@@ -50,8 +51,8 @@ export function BookingsPage() {
     try {
       const payload = {
         ...formData,
-        startTime: formData.startTime.replace('T', ' ') + ':00',
-        endTime: formData.endTime.replace('T', ' ') + ':00',
+        startTime: new Date(formData.startTime).toISOString(),
+        endTime: new Date(formData.endTime).toISOString(),
       }
       await bookings.create(payload)
       mutate(['bookings', page])
@@ -114,12 +115,12 @@ export function BookingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Бронирования</h1>
           <p className="text-[hsl(var(--muted-foreground))]">
-            Управление бронированиями рабочих мест
+            Управление всеми бронированиями рабочих мест
           </p>
         </div>
         <Button onClick={openModal}>
@@ -181,7 +182,7 @@ export function BookingsPage() {
                                 onClick={() => handleConfirm(booking.id)}
                                 title="Подтвердить"
                               >
-                                <Check className="h-4 w-4 text-[hsl(var(--success))]" />
+                                <Check className="h-4 w-4 text-green-600" />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -189,7 +190,7 @@ export function BookingsPage() {
                                 onClick={() => handleCancel(booking.id)}
                                 title="Отменить"
                               >
-                                <X className="h-4 w-4 text-[hsl(var(--warning))]" />
+                                <X className="h-4 w-4 text-amber-600" />
                               </Button>
                             </>
                           )}
@@ -277,6 +278,131 @@ export function BookingsPage() {
           </div>
         </form>
       </Modal>
+    </>
+  )
+}
+
+function UserBookingsView() {
+  const decoded = auth.getDecodedToken()
+  const userEmail = decoded?.sub || ''
+
+  const { data: currentUser } = useSWR<User>(
+    userEmail ? `user-${userEmail}` : null,
+    () => users.getByEmail(userEmail)
+  )
+
+  const { data: userBookings, isLoading } = useSWR<Booking[]>(
+    currentUser?.id ? `user-bookings-${currentUser.id}` : null,
+    () => bookings.getUserActive(currentUser!.id)
+  )
+
+  const handleCancel = async (id: number) => {
+    if (confirm('Вы уверены, что хотите отменить бронирование?')) {
+      try {
+        await bookings.cancel(id)
+        mutate(`user-bookings-${currentUser?.id}`)
+      } catch (error) {
+        console.error('Error cancelling booking:', error)
+      }
+    }
+  }
+
+  const formatDateTime = (dateStr: string) => {
+    try {
+      return format(new Date(dateStr.replace(' ', 'T')), 'dd MMM yyyy, HH:mm', { locale: ru })
+    } catch {
+      return dateStr
+    }
+  }
+
+  return (
+    <>
+      <div>
+        <h1 className="text-2xl font-bold">Мои бронирования</h1>
+        <p className="text-[hsl(var(--muted-foreground))]">
+          Просмотр и управление вашими бронированиями
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="flex h-32 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[hsl(var(--primary))] border-t-transparent" />
+        </div>
+      ) : userBookings && userBookings.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {userBookings.map((booking) => (
+            <Card key={booking.id}>
+              <CardHeader className="pb-2">
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg">{booking.workspaceName}</CardTitle>
+                  <Badge variant={statusVariants[booking.status]}>
+                    {statusLabels[booking.status]}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+                    <div>
+                      <p className="font-medium">Начало</p>
+                      <p className="text-[hsl(var(--muted-foreground))]">
+                        {formatDateTime(booking.startTime)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+                    <div>
+                      <p className="font-medium">Окончание</p>
+                      <p className="text-[hsl(var(--muted-foreground))]">
+                        {formatDateTime(booking.endTime)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-xs text-[hsl(var(--muted-foreground))]">
+                    Создано: {formatDateTime(booking.createdAt)}
+                  </div>
+
+                  {booking.status === 'PENDING' && (
+                    <div className="pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-[hsl(var(--destructive))]"
+                        onClick={() => handleCancel(booking.id)}
+                      >
+                        <X className="h-4 w-4" />
+                        Отменить бронирование
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Calendar className="h-12 w-12 text-[hsl(var(--muted-foreground))]" />
+            <h3 className="mt-4 text-lg font-medium">Нет активных бронирований</h3>
+            <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+              Перейдите в раздел &quot;Рабочие места&quot; для бронирования
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </>
+  )
+}
+
+export function BookingsPage() {
+  const { isAdmin } = useAuth()
+
+  return (
+    <div className="space-y-6">
+      {isAdmin ? <AdminBookingsView /> : <UserBookingsView />}
     </div>
   )
 }

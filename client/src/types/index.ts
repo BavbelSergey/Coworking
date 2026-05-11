@@ -16,6 +16,13 @@ export interface UserCreate {
   role?: UserRole
 }
 
+export interface RegisterRequest {
+  name: string
+  email: string
+  phone: string
+  password: string
+}
+
 export interface Amenity {
   id: number
   name: string
@@ -103,4 +110,13 @@ export interface AuthRequest {
 
 export interface AuthResponse {
   token: string
+  tokenType: string
+  expiresIn: number
+}
+
+export interface DecodedToken {
+  sub: string
+  role: UserRole
+  exp: number
+  iat: number
 }
