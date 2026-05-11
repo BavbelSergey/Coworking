@@ -56,7 +56,7 @@ public class SecurityConfig {
             .requestMatchers("/api/amenities/**").hasRole("ADMIN")
             .requestMatchers("/api/bookings/**").hasRole("ADMIN")
             .requestMatchers("/api/payments/**").hasRole("ADMIN")
-            .requestMatchers("/api/async-tasks/**", "/api/counter/**").hasRole("ADMIN")
+            .requestMatchers("/tasks/**", "/api/concurrency/race").permitAll()
             .anyRequest().authenticated()
         )
         .authenticationProvider(authenticationProvider())
