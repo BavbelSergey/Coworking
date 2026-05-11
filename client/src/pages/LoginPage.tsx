@@ -4,9 +4,22 @@ import { useAuth } from '../context/AuthContext'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
+import { cn, layout, form } from '../lib/styles'
 import { Building2, UserPlus, LogIn } from 'lucide-react'
 
 type AuthMode = 'login' | 'register'
+
+const tabStyles = {
+  container: 'mb-6 flex rounded-lg bg-secondary p-1',
+  button: 'flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors',
+  active: 'bg-card text-foreground shadow-sm',
+  inactive: 'text-muted-foreground hover:text-foreground',
+}
+
+const alertStyles = {
+  error: 'mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive',
+  success: 'mb-4 rounded-lg bg-green-500/10 p-3 text-sm text-green-600',
+}
 
 export function LoginPage() {
   const [mode, setMode] = useState<AuthMode>('login')
@@ -62,11 +75,8 @@ export function LoginPage() {
       setMode('login')
       setPassword('')
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'Ошибка при регистрации')
-      } else {
-        setError('Ошибка при регистрации')
-      }
+      const message = err instanceof Error ? err.message : 'Ошибка при регистрации'
+      setError(message)
     } finally {
       setIsLoading(false)
     }
@@ -77,31 +87,34 @@ export function LoginPage() {
     setMode(newMode)
   }
 
+  const isLoginMode = mode === 'login'
+  const isRegisterMode = mode === 'register'
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[hsl(var(--secondary))] p-4">
+    <div className={cn(layout.flexCenter, 'min-h-screen bg-secondary p-4')}>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[hsl(var(--primary))]">
-            <Building2 className="h-8 w-8 text-[hsl(var(--primary-foreground))]" />
+          <div className={cn(layout.flexCenter, 'mx-auto mb-4 h-16 w-16 rounded-full bg-primary')}>
+            <Building2 className="h-8 w-8 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl">Coworking Space</CardTitle>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {mode === 'login' 
+          <p className="text-sm text-muted-foreground">
+            {isLoginMode
               ? 'Войдите в систему управления коворкингом'
               : 'Создайте аккаунт для бронирования'}
           </p>
         </CardHeader>
+
         <CardContent>
           {/* Mode Tabs */}
-          <div className="mb-6 flex rounded-lg bg-[hsl(var(--secondary))] p-1">
+          <div className={tabStyles.container}>
             <button
               type="button"
               onClick={() => switchMode('login')}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${
-                mode === 'login'
-                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-sm'
-                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
-              }`}
+              className={cn(
+                tabStyles.button,
+                isLoginMode ? tabStyles.active : tabStyles.inactive
+              )}
             >
               <LogIn className="h-4 w-4" />
               Вход
@@ -109,31 +122,21 @@ export function LoginPage() {
             <button
               type="button"
               onClick={() => switchMode('register')}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${
-                mode === 'register'
-                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-sm'
-                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
-              }`}
+              className={cn(
+                tabStyles.button,
+                isRegisterMode ? tabStyles.active : tabStyles.inactive
+              )}
             >
               <UserPlus className="h-4 w-4" />
               Регистрация
             </button>
           </div>
 
-          {error && (
-            <div className="mb-4 rounded-lg bg-[hsl(var(--destructive))]/10 p-3 text-sm text-[hsl(var(--destructive))]">
-              {error}
-            </div>
-          )}
+          {error && <div className={alertStyles.error}>{error}</div>}
+          {success && <div className={alertStyles.success}>{success}</div>}
 
-          {success && (
-            <div className="mb-4 rounded-lg bg-green-500/10 p-3 text-sm text-green-600">
-              {success}
-            </div>
-          )}
-
-          {mode === 'login' ? (
-            <form onSubmit={handleLogin} className="space-y-4">
+          {isLoginMode ? (
+            <form onSubmit={handleLogin} className={form.group}>
               <Input
                 label="Email"
                 type="email"
@@ -150,16 +153,12 @@ export function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Вход...' : 'Войти'}
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleRegister} className={form.group}>
               <Input
                 label="Имя"
                 type="text"
@@ -192,11 +191,7 @@ export function LoginPage() {
                 required
                 minLength={8}
               />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
               </Button>
             </form>

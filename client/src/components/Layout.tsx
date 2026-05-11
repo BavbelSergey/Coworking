@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { cn, nav, roleBadge } from '../lib/styles'
 import {
   LayoutDashboard,
   Users,
@@ -32,62 +33,63 @@ const navItems: NavItem[] = [
 ]
 
 export function Layout() {
-  const { logout, isAdmin, role } = useAuth()
+  const { logout, isAdmin } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin)
 
+  const closeSidebar = () => setSidebarOpen(false)
+  const openSidebar = () => setSidebarOpen(true)
+
   return (
-    <div className="flex min-h-screen bg-[hsl(var(--secondary))]">
+    <div className="flex min-h-screen bg-secondary">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-[hsl(var(--card))] shadow-lg transition-transform duration-200 lg:static lg:translate-x-0 ${
+        className={cn(
+          nav.sidebar,
+          'transform transition-transform duration-200 lg:static lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        )}
       >
-        <div className="flex h-16 items-center justify-between border-b px-6">
-          <h1 className="text-xl font-bold text-[hsl(var(--primary))]">Coworking</h1>
-          <button
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
+        <div className={nav.sidebarHeader}>
+          <h1 className="text-xl font-bold text-primary">Coworking</h1>
+          <button className="lg:hidden" onClick={closeSidebar}>
             <X className="h-6 w-6" />
           </button>
         </div>
 
         {/* Role Badge */}
         <div className="border-b px-6 py-3">
-          <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-            isAdmin 
-              ? 'bg-amber-100 text-amber-800' 
-              : 'bg-blue-100 text-blue-800'
-          }`}>
-            {isAdmin ? <Shield className="h-3 w-3" /> : <User className="h-3 w-3" />}
+          <div className={isAdmin ? roleBadge.admin : roleBadge.user}>
+            {isAdmin ? (
+              <Shield className="h-3 w-3" />
+            ) : (
+              <User className="h-3 w-3" />
+            )}
             {isAdmin ? 'Администратор' : 'Пользователь'}
           </div>
         </div>
 
-        <nav className="flex flex-col gap-1 p-4">
+        <nav className={nav.sidebarNav}>
           {filteredNavItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/'}
-              onClick={() => setSidebarOpen(false)}
+              onClick={closeSidebar}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                    : 'text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--secondary))] hover:text-[hsl(var(--foreground))]'
-                }`
+                cn(
+                  nav.navLink,
+                  isActive ? nav.navLinkActive : nav.navLinkInactive
+                )
               }
             >
               <Icon className="h-5 w-5" />
@@ -95,10 +97,14 @@ export function Layout() {
             </NavLink>
           ))}
         </nav>
+
         <div className="absolute bottom-0 left-0 right-0 border-t p-4">
           <button
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-[hsl(var(--destructive))] transition-colors hover:bg-[hsl(var(--destructive))]/10"
+            className={cn(
+              nav.navLink,
+              'w-full text-destructive hover:bg-destructive/10'
+            )}
           >
             <LogOut className="h-5 w-5" />
             Выйти
@@ -109,17 +115,17 @@ export function Layout() {
       {/* Main content */}
       <div className="flex flex-1 flex-col">
         {/* Mobile header */}
-        <header className="flex h-16 items-center gap-4 border-b bg-[hsl(var(--card))] px-6 lg:hidden">
-          <button onClick={() => setSidebarOpen(true)}>
+        <header className="flex h-16 items-center gap-4 border-b bg-card px-6 lg:hidden">
+          <button onClick={openSidebar}>
             <Menu className="h-6 w-6" />
           </button>
           <h1 className="text-lg font-semibold">Coworking</h1>
-          <div className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-            isAdmin 
-              ? 'bg-amber-100 text-amber-800' 
-              : 'bg-blue-100 text-blue-800'
-          }`}>
-            {isAdmin ? <Shield className="h-3 w-3" /> : <User className="h-3 w-3" />}
+          <div className={cn('ml-auto', isAdmin ? roleBadge.admin : roleBadge.user)}>
+            {isAdmin ? (
+              <Shield className="h-3 w-3" />
+            ) : (
+              <User className="h-3 w-3" />
+            )}
             {isAdmin ? 'Admin' : 'User'}
           </div>
         </header>
