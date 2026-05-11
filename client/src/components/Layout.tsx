@@ -10,21 +10,32 @@ import {
   LogOut,
   Menu,
   X,
+  Shield,
+  User,
 } from 'lucide-react'
 import { useState } from 'react'
 
-const navItems = [
+interface NavItem {
+  to: string
+  icon: React.ElementType
+  label: string
+  adminOnly?: boolean
+}
+
+const navItems: NavItem[] = [
   { to: '/', icon: LayoutDashboard, label: 'Панель управления' },
-  { to: '/users', icon: Users, label: 'Пользователи' },
   { to: '/workspaces', icon: Building2, label: 'Рабочие места' },
   { to: '/bookings', icon: Calendar, label: 'Бронирования' },
-  { to: '/payments', icon: CreditCard, label: 'Платежи' },
-  { to: '/amenities', icon: Wifi, label: 'Удобства' },
+  { to: '/users', icon: Users, label: 'Пользователи', adminOnly: true },
+  { to: '/payments', icon: CreditCard, label: 'Платежи', adminOnly: true },
+  { to: '/amenities', icon: Wifi, label: 'Удобства', adminOnly: true },
 ]
 
 export function Layout() {
-  const { logout } = useAuth()
+  const { logout, isAdmin, role } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin)
 
   return (
     <div className="flex min-h-screen bg-[hsl(var(--secondary))]">
@@ -51,8 +62,21 @@ export function Layout() {
             <X className="h-6 w-6" />
           </button>
         </div>
+
+        {/* Role Badge */}
+        <div className="border-b px-6 py-3">
+          <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
+            isAdmin 
+              ? 'bg-amber-100 text-amber-800' 
+              : 'bg-blue-100 text-blue-800'
+          }`}>
+            {isAdmin ? <Shield className="h-3 w-3" /> : <User className="h-3 w-3" />}
+            {isAdmin ? 'Администратор' : 'Пользователь'}
+          </div>
+        </div>
+
         <nav className="flex flex-col gap-1 p-4">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {filteredNavItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
@@ -90,6 +114,14 @@ export function Layout() {
             <Menu className="h-6 w-6" />
           </button>
           <h1 className="text-lg font-semibold">Coworking</h1>
+          <div className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+            isAdmin 
+              ? 'bg-amber-100 text-amber-800' 
+              : 'bg-blue-100 text-blue-800'
+          }`}>
+            {isAdmin ? <Shield className="h-3 w-3" /> : <User className="h-3 w-3" />}
+            {isAdmin ? 'Admin' : 'User'}
+          </div>
         </header>
 
         {/* Page content */}

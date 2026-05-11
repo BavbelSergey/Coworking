@@ -5,20 +5,38 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Modal } from '../components/ui/Modal'
 import { Badge } from '../components/ui/Badge'
-import { workspaces, amenities } from '../lib/api'
-import { Plus, Pencil, Trash2, Users, ChevronLeft, ChevronRight, Wifi } from 'lucide-react'
-import type { Workspace, WorkspaceCreate, Amenity, Page } from '../types'
+import { useAuth } from '../context/AuthContext'
+import { workspaces, amenities, bookings, users, auth } from '../lib/api'
+import { Plus, Pencil, Trash2, Users, ChevronLeft, ChevronRight, Wifi, Calendar } from 'lucide-react'
+import type { Workspace, WorkspaceCreate, Amenity, Page, User, BookingCreate } from '../types'
 
 export function WorkspacesPage() {
+  const { isAdmin } = useAuth()
   const [page, setPage] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
   const [editingWorkspace, setEditingWorkspace] = useState<Workspace | null>(null)
+  const [bookingWorkspace, setBookingWorkspace] = useState<Workspace | null>(null)
   const [formData, setFormData] = useState<WorkspaceCreate>({
     name: '',
     phoneNumber: '',
     capacity: 1,
     pricePerHour: 0,
   })
+  const [bookingData, setBookingData] = useState({
+    startTime: '',
+    endTime: '',
+  })
+  const [bookingError, setBookingError] = useState('')
+  const [bookingSuccess, setBookingSuccess] = useState('')
+
+  const decoded = auth.getDecodedToken()
+  const userEmail = decoded?.sub || ''
+
+  const { data: currentUser } = useSWR<User>(
+    userEmail ? `user-${userEmail}` : null,
+    () => users.getByEmail(userEmail)
+  )
 
   const { data, isLoading } = useSWR<Page<Workspace>>(
     ['workspaces', page],
@@ -69,6 +87,37 @@ export function WorkspacesPage() {
     }
   }
 
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setBookingError('')
+    setBookingSuccess('')
+
+    if (!currentUser || !bookingWorkspace) {
+      setBookingError('Не удалось получить данные пользователя')
+      return
+    }
+
+    try {
+      const bookingPayload: BookingCreate = {
+        startTime: new Date(bookingData.startTime).toISOString(),
+        endTime: new Date(bookingData.endTime).toISOString(),
+        userId: currentUser.id,
+        workspaceId: bookingWorkspace.id,
+      }
+      await bookings.create(bookingPayload)
+      setBookingSuccess('Бронирование успешно создано!')
+      setTimeout(() => {
+        closeBookingModal()
+      }, 1500)
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setBookingError(err.message || 'Ошибка при создании бронирования')
+      } else {
+        setBookingError('Ошибка при создании бронирования')
+      }
+    }
+  }
+
   const openModal = (workspace?: Workspace) => {
     if (workspace) {
       setEditingWorkspace(workspace)
@@ -91,19 +140,39 @@ export function WorkspacesPage() {
     setFormData({ name: '', phoneNumber: '', capacity: 1, pricePerHour: 0 })
   }
 
+  const openBookingModal = (workspace: Workspace) => {
+    setBookingWorkspace(workspace)
+    setBookingData({ startTime: '', endTime: '' })
+    setBookingError('')
+    setBookingSuccess('')
+    setIsBookingModalOpen(true)
+  }
+
+  const closeBookingModal = () => {
+    setIsBookingModalOpen(false)
+    setBookingWorkspace(null)
+    setBookingData({ startTime: '', endTime: '' })
+    setBookingError('')
+    setBookingSuccess('')
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Рабочие места</h1>
           <p className="text-[hsl(var(--muted-foreground))]">
-            Управление рабочими местами коворкинга
+            {isAdmin 
+              ? 'Управление рабочими местами коворкинга'
+              : 'Выберите рабочее место для бронирования'}
           </p>
         </div>
-        <Button onClick={() => openModal()}>
-          <Plus className="h-4 w-4" />
-          Добавить
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => openModal()}>
+            <Plus className="h-4 w-4" />
+            Добавить
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -118,22 +187,24 @@ export function WorkspacesPage() {
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-lg">{workspace.name}</CardTitle>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openModal(workspace)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(workspace.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-[hsl(var(--destructive))]" />
-                      </Button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openModal(workspace)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(workspace.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-[hsl(var(--destructive))]" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -168,8 +239,8 @@ export function WorkspacesPage() {
                             <Badge
                               key={amenity.id}
                               variant="secondary"
-                              className="cursor-pointer hover:bg-[hsl(var(--destructive))]/10"
-                              onClick={() => handleToggleAmenity(workspace.id, amenity.id, true)}
+                              className={isAdmin ? 'cursor-pointer hover:bg-[hsl(var(--destructive))]/10' : ''}
+                              onClick={() => isAdmin && handleToggleAmenity(workspace.id, amenity.id, true)}
                             >
                               {amenity.name}
                             </Badge>
@@ -180,7 +251,7 @@ export function WorkspacesPage() {
                           </span>
                         )}
                       </div>
-                      {amenitiesData && (
+                      {isAdmin && amenitiesData && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {amenitiesData.content
                             .filter(a => !workspace.amenities?.some(wa => wa.id === a.id))
@@ -198,6 +269,19 @@ export function WorkspacesPage() {
                         </div>
                       )}
                     </div>
+
+                    {/* Book button for regular users */}
+                    {!isAdmin && (
+                      <div className="pt-3">
+                        <Button 
+                          className="w-full" 
+                          onClick={() => openBookingModal(workspace)}
+                        >
+                          <Calendar className="h-4 w-4" />
+                          Забронировать
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -232,6 +316,7 @@ export function WorkspacesPage() {
         </>
       )}
 
+      {/* Admin: Create/Edit Workspace Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -273,6 +358,62 @@ export function WorkspacesPage() {
             </Button>
             <Button type="submit">
               {editingWorkspace ? 'Сохранить' : 'Создать'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* User: Booking Modal */}
+      <Modal
+        isOpen={isBookingModalOpen}
+        onClose={closeBookingModal}
+        title={`Бронирование: ${bookingWorkspace?.name || ''}`}
+      >
+        <form onSubmit={handleBookingSubmit} className="space-y-4">
+          {bookingError && (
+            <div className="rounded-lg bg-[hsl(var(--destructive))]/10 p-3 text-sm text-[hsl(var(--destructive))]">
+              {bookingError}
+            </div>
+          )}
+          {bookingSuccess && (
+            <div className="rounded-lg bg-green-500/10 p-3 text-sm text-green-600">
+              {bookingSuccess}
+            </div>
+          )}
+
+          {bookingWorkspace && (
+            <div className="rounded-lg bg-[hsl(var(--secondary))] p-3">
+              <p className="text-sm">
+                <span className="text-[hsl(var(--muted-foreground))]">Цена:</span>{' '}
+                <span className="font-semibold">{bookingWorkspace.pricePerHour} руб/час</span>
+              </p>
+              <p className="text-sm">
+                <span className="text-[hsl(var(--muted-foreground))]">Вместимость:</span>{' '}
+                <span className="font-semibold">{bookingWorkspace.capacity} чел.</span>
+              </p>
+            </div>
+          )}
+
+          <Input
+            label="Дата и время начала"
+            type="datetime-local"
+            value={bookingData.startTime}
+            onChange={(e) => setBookingData({ ...bookingData, startTime: e.target.value })}
+            required
+          />
+          <Input
+            label="Дата и время окончания"
+            type="datetime-local"
+            value={bookingData.endTime}
+            onChange={(e) => setBookingData({ ...bookingData, endTime: e.target.value })}
+            required
+          />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={closeBookingModal}>
+              Отмена
+            </Button>
+            <Button type="submit">
+              Забронировать
             </Button>
           </div>
         </form>

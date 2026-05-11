@@ -1,6 +1,7 @@
 import type {
   User,
   UserCreate,
+  UserRole,
   Workspace,
   WorkspaceCreate,
   Booking,
@@ -12,6 +13,8 @@ import type {
   Page,
   AuthRequest,
   AuthResponse,
+  RegisterRequest,
+  DecodedToken,
 } from '../types'
 
 const API_BASE = '/api'
@@ -58,10 +61,32 @@ async function fetchApi<T>(
   return response.json()
 }
 
+// Helper to decode JWT
+function decodeToken(token: string): DecodedToken | null {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch {
+    return null
+  }
+}
+
 // Auth
 export const auth = {
   login: (data: AuthRequest) =>
     fetchApi<AuthResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  register: (data: RegisterRequest) =>
+    fetchApi<User>('/users', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -70,6 +95,18 @@ export const auth = {
   },
   getToken: () => localStorage.getItem('token'),
   setToken: (token: string) => localStorage.setItem('token', token),
+  getDecodedToken: (): DecodedToken | null => {
+    const token = localStorage.getItem('token')
+    if (!token) return null
+    return decodeToken(token)
+  },
+  getRole: (): UserRole | null => {
+    const decoded = auth.getDecodedToken()
+    return decoded?.role || null
+  },
+  isAdmin: (): boolean => {
+    return auth.getRole() === 'ROLE_ADMIN'
+  },
 }
 
 // Users

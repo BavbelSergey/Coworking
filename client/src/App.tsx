@@ -27,6 +27,28 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isAdmin, isLoading } = useAuth()
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[hsl(var(--primary))] border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />
+  }
+
+  return <>{children}</>
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -40,11 +62,12 @@ function AppRoutes() {
         }
       >
         <Route index element={<DashboardPage />} />
-        <Route path="users" element={<UsersPage />} />
         <Route path="workspaces" element={<WorkspacesPage />} />
         <Route path="bookings" element={<BookingsPage />} />
-        <Route path="payments" element={<PaymentsPage />} />
-        <Route path="amenities" element={<AmenitiesPage />} />
+        {/* Admin only routes */}
+        <Route path="users" element={<AdminRoute><UsersPage /></AdminRoute>} />
+        <Route path="payments" element={<AdminRoute><PaymentsPage /></AdminRoute>} />
+        <Route path="amenities" element={<AdminRoute><AmenitiesPage /></AdminRoute>} />
       </Route>
     </Routes>
   )
