@@ -1,11 +1,9 @@
 package com.example.coworking.utils;
 
-import com.example.coworking.dto.UserDto;
 import com.example.coworking.exception.ErrorCode;
 import com.example.coworking.exception.NotFoundException;
 import com.example.coworking.model.AsyncTask;
 import com.example.coworking.model.TaskStatus;
-import com.example.coworking.model.User;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
