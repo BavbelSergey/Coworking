@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -80,8 +81,8 @@ class BookingServiceTest {
     booking.setId(1L);
     booking.setUser(user);
     booking.setWorkspace(workspace);
-    booking.setStartTime(LocalDateTime.now().plusDays(1));
-    booking.setEndTime(LocalDateTime.now().plusDays(1).plusHours(8));
+    booking.setStartDate(LocalDate.now().plusDays(1));
+    booking.setEndDate(LocalDate.now().plusDays(1).plusDays(7));
     booking.setStatus(BookingStatus.PENDING);
     booking.setCreatedAt(LocalDateTime.now());
 
@@ -94,12 +95,12 @@ class BookingServiceTest {
     createDto = new BookingCreateDto();
     createDto.setUserId(1L);
     createDto.setWorkspaceId(1L);
-    createDto.setStartTime(LocalDateTime.now().plusDays(1));
-    createDto.setEndTime(LocalDateTime.now().plusDays(1).plusHours(8));
+    createDto.setStartDate(LocalDate.now().plusDays(1));
+    createDto.setEndDate(LocalDate.now().plusDays(1).plusDays(7));
 
     updateDto = new BookingUpdateDto();
-    updateDto.setStartTime(LocalDateTime.now().plusDays(2));
-    updateDto.setEndTime(LocalDateTime.now().plusDays(2).plusHours(8));
+    updateDto.setStartDate(LocalDate.now().plusDays(2));
+    updateDto.setEndDate(LocalDate.now().plusDays(2).plusDays(7));
   }
 
   // ==================== getBookingById ====================
@@ -267,9 +268,9 @@ class BookingServiceTest {
     @Test
     @DisplayName("Should keep old startTime when only endTime provided")
     void shouldKeepOldStartTime() {
-      LocalDateTime oldStart = booking.getStartTime();
+      LocalDate oldStart = booking.getStartDate();
       BookingUpdateDto endOnlyDto = new BookingUpdateDto();
-      endOnlyDto.setEndTime(LocalDateTime.now().plusDays(3));
+      endOnlyDto.setEndDate(LocalDate.now().plusDays(3));
 
       Workspace ws = new Workspace();
       ws.setId(1L);
@@ -289,9 +290,9 @@ class BookingServiceTest {
     @Test
     @DisplayName("Should keep old endTime when only startTime provided")
     void shouldKeepOldEndTime() {
-      LocalDateTime oldEnd = booking.getEndTime();
+      LocalDate oldEnd = booking.getEndDate();
       BookingUpdateDto startOnlyDto = new BookingUpdateDto();
-      startOnlyDto.setStartTime(LocalDateTime.now().plusDays(1).plusHours(2));
+      startOnlyDto.setStartDate(LocalDate.now().plusDays(1).plusDays(2));
 
       Workspace ws = new Workspace();
       ws.setId(1L);
@@ -730,3 +731,4 @@ class BookingServiceTest {
     }
   }
 }
+

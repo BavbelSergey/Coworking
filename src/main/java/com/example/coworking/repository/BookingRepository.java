@@ -2,7 +2,7 @@ package com.example.coworking.repository;
 
 import com.example.coworking.model.Booking;
 import com.example.coworking.model.BookingStatus;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
@@ -25,7 +25,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       LEFT JOIN FETCH b.payment
       WHERE b.workspace.pricePerHour < :price
       AND b.workspace.capacity > :capacity
-      ORDER BY b.startTime DESC
+      ORDER BY b.startDate DESC
       """)
   Page<Booking> findBookingsByUserId(@RequestParam Long price,
       @RequestParam Long capacity, Pageable pageable);
@@ -34,8 +34,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       """
       SELECT DISTINCT
             b.id,
-            b.start_time,
-            b.end_time,
+            b.start_date,
+            b.end_date,
             b.created_at,
             b.status,
             b.user_id,
@@ -45,7 +45,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         LEFT JOIN payments p ON b.id = p.booking_id
         WHERE w.price_per_hour < :price
           AND w.capacity > :capacity
-        ORDER BY b.start_time DESC
+        ORDER BY b.start_date DESC
       """,
       countQuery =
       """
@@ -73,8 +73,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
   @EntityGraph(attributePaths = {"user", "workspace"})
   @Query("SELECT b FROM Booking b WHERE b.workspace.id = :workspaceId "
       + "AND b.status != 'CANCELLED' "
-      + "AND ((b.startTime <= :endTime AND b.endTime >= :startTime))")
+      + "AND ((b.startDate <= :endDate AND b.endDate >= :startDate))")
   List<Booking> findConflictingBookings(@Param("workspaceId") Long workspaceId,
-      @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+      @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
 }

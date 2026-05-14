@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,13 +36,13 @@ public class PaymentDto {
   @Schema(description = "ID бронирования", example = "1")
   private Long bookingId;
 
-  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  @Schema(description = "Время начала бронирования", example = "2026-05-10 09:00:00")
-  private LocalDateTime bookingStartTime;
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  @Schema(description = "Дата начала бронирования", example = "2026-05-10")
+  private LocalDate bookingStartDate;
 
-  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  @Schema(description = "Время окончания бронирования", example = "2026-05-10 18:00:00")
-  private LocalDateTime bookingEndTime;
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  @Schema(description = "Дата окончания бронирования", example = "2026-05-10")
+  private LocalDate bookingEndDate;
 
   @Schema(description = "ID пользователя", example = "1")
   private Long userId;

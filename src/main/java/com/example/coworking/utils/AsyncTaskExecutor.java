@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AsyncTaskExecutor {
 
-  public static final int TASK_EXECUTION_TIME_MILLIS = 10000;
+  public static final int TASK_EXECUTION_TIME_MILLIS = 20000;
 
   private final AsyncTaskStorage asyncTaskStorage;
 

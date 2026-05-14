@@ -132,7 +132,7 @@ function AdminDashboard() {
                   </p>
                 </div>
                 <span className="font-semibold text-primary">
-                  {workspace.pricePerHour} руб/час
+                  {workspace.pricePerHour} руб/день
                 </span>
               </div>
             )) || (
@@ -227,7 +227,7 @@ function UserDashboard() {
                   <div>
                     <p className="font-medium">{booking.workspaceName}</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(booking.startTime).toLocaleDateString('ru-RU')}
+                      {new Date(booking.startDate).toLocaleDateString('ru-RU')}
                     </p>
                   </div>
                   <span className={getStatusBadgeClass(booking.status)}>

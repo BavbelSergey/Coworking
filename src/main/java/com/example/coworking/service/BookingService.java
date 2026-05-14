@@ -16,6 +16,7 @@ import com.example.coworking.model.Workspace;
 import com.example.coworking.repository.BookingRepository;
 import com.example.coworking.repository.UserRepository;
 import com.example.coworking.repository.WorkspaceRepository;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -113,7 +114,7 @@ public class BookingService {
   public BookingDto createBooking(BookingCreateDto createDto) {
     log.info("Creating new booking: userId={}, workspaceId={}, start={}, end={}",
         createDto.getUserId(), createDto.getWorkspaceId(),
-        createDto.getStartTime(), createDto.getEndTime());
+        createDto.getStartDate(), createDto.getEndDate());
 
     Workspace workspace = workspaceRepository.findById(createDto.getWorkspaceId())
         .orElseThrow(() -> {
@@ -123,11 +124,11 @@ public class BookingService {
         });
 
     List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(
-        workspace.getId(), createDto.getStartTime(), createDto.getEndTime());
+        workspace.getId(), createDto.getStartDate(), createDto.getEndDate());
 
     if (!conflictingBookings.isEmpty()) {
       log.warn("Workspace {} is not available for period {} – {} ({} conflicts)",
-          workspace.getId(), createDto.getStartTime(), createDto.getEndTime(),
+          workspace.getId(), createDto.getStartDate(), createDto.getEndDate(),
           conflictingBookings.size());
       throw new UnprocessableContentException(ErrorCode.WORKSPACE_NOT_AVAILABLE);
     }
@@ -144,7 +145,7 @@ public class BookingService {
     bookingCache.clear();
     log.info("Successfully created booking: id={}, userId={}, workspaceId={}, period={} – {}",
         savedBooking.getId(), user.getId(), workspace.getId(),
-        savedBooking.getStartTime(), savedBooking.getEndTime());
+        savedBooking.getStartDate(), savedBooking.getEndDate());
     return bookingMapper.toDto(savedBooking);
   }
 
@@ -164,11 +165,11 @@ public class BookingService {
       throw new ConflictException(ErrorCode.CAN_NOT_UPDATE);
     }
 
-    if (updateDto.getStartTime() != null || updateDto.getEndTime() != null) {
-      LocalDateTime newStart = updateDto.getStartTime() != null
-          ? updateDto.getStartTime() : booking.getStartTime();
-      LocalDateTime newEnd = updateDto.getEndTime() != null
-          ? updateDto.getEndTime() : booking.getEndTime();
+    if (updateDto.getStartDate() != null || updateDto.getEndDate() != null) {
+      LocalDate newStart = updateDto.getStartDate() != null
+          ? updateDto.getStartDate() : booking.getStartDate();
+      LocalDate newEnd = updateDto.getEndDate() != null
+          ? updateDto.getEndDate() : booking.getEndDate();
 
       log.debug("Checking conflicts for new period: {} – {}", newStart, newEnd);
 

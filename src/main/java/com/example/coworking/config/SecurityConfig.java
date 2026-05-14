@@ -39,19 +39,23 @@ public class SecurityConfig {
             .requestMatchers(
                 "/api/auth/**",
                 "/swagger-ui/**",
-                "/v3/api-docs/**",
+                "/v3/api-docs/**",      // ← ИСПРАВЛЕНО: было "/v3/api-do<null>cs/**"
                 "/swagger-ui.html",
-                "/error"
+                "/error",
+                "/swagger-resources/**",  // ← ДОБАВИТЬ
+                "/swagger-resources",     // ← ДОБАВИТЬ
+                "/webjars/**"
             ).permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/workspaces/**").hasAnyRole("ADMIN", "USER")
             .requestMatchers(HttpMethod.GET, "/api/amenities/**").hasAnyRole("ADMIN", "USER")
             .requestMatchers(HttpMethod.POST, "/api/bookings").hasAnyRole("ADMIN", "USER")
+            .requestMatchers(HttpMethod.GET, "/api/bookings/**").hasAnyRole("ADMIN", "USER")
             .requestMatchers(HttpMethod.POST, "/api/bookings/*/cancel").hasAnyRole("ADMIN", "USER")
             .requestMatchers(HttpMethod.POST, "/api/payments").hasAnyRole("ADMIN", "USER")
             .requestMatchers(HttpMethod.GET, "/api/payments/check/booking/**")
             .hasAnyRole("ADMIN", "USER")
-            .requestMatchers("/api/users/**").permitAll() //hasRole("ADMIN")
+            .requestMatchers("/api/users/**").permitAll()
             .requestMatchers("/api/workspaces/**").hasRole("ADMIN")
             .requestMatchers("/api/amenities/**").hasRole("ADMIN")
             .requestMatchers("/api/bookings/**").hasRole("ADMIN")
@@ -74,11 +78,14 @@ public class SecurityConfig {
   @Bean
   public UserDetailsService userDetailsService() {
     return email -> userRepository.findByEmail(email)
-        .map(user -> org.springframework.security.core.userdetails.User
-            .withUsername(user.getEmail())
-            .password(user.getPassword())
-            .authorities((user.getRole() == null ? UserRole.USER : user.getRole()).getAuthority())
-            .build())
+        .map(user -> {
+          UserRole role = user.getRole() == null ? UserRole.USER : user.getRole();
+          return org.springframework.security.core.userdetails.User
+              .withUsername(user.getEmail())
+              .password(user.getPassword())
+              .authorities(role.getAuthority())
+              .build();
+        })
         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
   }
 

@@ -22,8 +22,8 @@ public class BookingMapper {
 
     BookingDto dto = new BookingDto();
     dto.setId(booking.getId());
-    dto.setStartTime(booking.getStartTime());
-    dto.setEndTime(booking.getEndTime());
+    dto.setStartDate(booking.getStartDate());
+    dto.setEndDate(booking.getEndDate());
     dto.setCreatedAt(booking.getCreatedAt());
     dto.setStatus(booking.getStatus());
 
@@ -51,8 +51,8 @@ public class BookingMapper {
     }
 
     Booking booking = new Booking();
-    booking.setStartTime(createDto.getStartTime());
-    booking.setEndTime(createDto.getEndTime());
+    booking.setStartDate(createDto.getStartDate());
+    booking.setEndDate(createDto.getEndDate());
     booking.setCreatedAt(LocalDateTime.now());
     booking.setStatus(BookingStatus.PENDING);
     booking.setUser(user);
@@ -66,11 +66,11 @@ public class BookingMapper {
       return;
     }
 
-    if (updateDto.getStartTime() != null) {
-      booking.setStartTime(updateDto.getStartTime());
+    if (updateDto.getStartDate() != null) {
+      booking.setStartDate(updateDto.getStartDate());
     }
-    if (updateDto.getEndTime() != null) {
-      booking.setEndTime(updateDto.getEndTime());
+    if (updateDto.getEndDate() != null) {
+      booking.setEndDate(updateDto.getEndDate());
     }
     if (updateDto.getStatus() != null) {
       booking.setStatus(updateDto.getStatus());

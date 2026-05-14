@@ -4,7 +4,7 @@ import com.example.coworking.model.BookingStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Future;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,15 +17,15 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Запрос на обновление бронирования")
 public class BookingUpdateDto {
 
-  @Future(message = "Start time must be in the future")
-  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  @Schema(description = "Новое время начала бронирования", example = "2026-05-10 10:00:00")
-  private LocalDateTime startTime;
+  @Future(message = "Start date must be in the future")
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  @Schema(description = "Новая дата начала бронирования", example = "2026-05-10")
+  private LocalDate startDate;
 
-  @Future(message = "End time must be in the future")
-  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  @Schema(description = "Новое время окончания бронирования", example = "2026-05-10 19:00:00")
-  private LocalDateTime endTime;
+  @Future(message = "End date must be in the future")
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  @Schema(description = "Новая дата окончания бронирования", example = "2026-05-10")
+  private LocalDate endDate;
 
   @Schema(description = "Новый статус бронирования", example = "CONFIRMED")
   private BookingStatus status;

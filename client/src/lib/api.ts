@@ -105,7 +105,7 @@ export const auth = {
     return decoded?.role || null
   },
   isAdmin: (): boolean => {
-    return auth.getRole() === 'admin'
+    return auth.getRole() === 'ADMIN'
   },
 }
 

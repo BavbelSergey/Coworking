@@ -26,8 +26,8 @@ public class PaymentMapper {
 
     if (payment.getBooking() != null) {
       dto.setBookingId(payment.getBooking().getId());
-      dto.setBookingStartTime(payment.getBooking().getStartTime());
-      dto.setBookingEndTime(payment.getBooking().getEndTime());
+      dto.setBookingStartDate(payment.getBooking().getStartDate());
+      dto.setBookingEndDate(payment.getBooking().getEndDate());
 
       if (payment.getBooking().getUser() != null) {
         dto.setUserId(payment.getBooking().getUser().getId());

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'user'
+export type UserRole = 'ADMIN' | 'USER'
 
 export interface User {
   id: number
@@ -55,8 +55,8 @@ export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
 
 export interface Booking {
   id: number
-  startTime: string
-  endTime: string
+  startDate: string
+  endDate: string
   createdAt: string
   status: BookingStatus
   userId: number
@@ -68,8 +68,8 @@ export interface Booking {
 }
 
 export interface BookingCreate {
-  startTime: string
-  endTime: string
+  startDate: string
+  endDate: string
   userId: number
   workspaceId: number
 }
@@ -80,8 +80,8 @@ export interface Payment {
   date: string
   paymentMethod: 'CARD' | 'CASH' | 'TRANSFER'
   bookingId: number
-  bookingStartTime: string
-  bookingEndTime: string
+  bookingStartDate: string
+  bookingEndDate: string
   userId: number
   userName: string
   workspaceId: number

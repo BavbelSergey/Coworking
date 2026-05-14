@@ -37,8 +37,8 @@ export function WorkspacesPage() {
     pricePerHour: 0,
   })
   const [bookingData, setBookingData] = useState({
-    startTime: '',
-    endTime: '',
+    startDate: '',
+    endDate: '',
   })
   const [bookingError, setBookingError] = useState('')
   const [bookingSuccess, setBookingSuccess] = useState('')
@@ -112,8 +112,8 @@ export function WorkspacesPage() {
 
     try {
       const bookingPayload: BookingCreate = {
-        startTime: new Date(bookingData.startTime).toISOString(),
-        endTime: new Date(bookingData.endTime).toISOString(),
+        startDate: bookingData.startDate,
+        endDate: bookingData.endDate,
         userId: currentUser.id,
         workspaceId: bookingWorkspace.id,
       }
@@ -152,7 +152,7 @@ export function WorkspacesPage() {
 
   const openBookingModal = (workspace: Workspace) => {
     setBookingWorkspace(workspace)
-    setBookingData({ startTime: '', endTime: '' })
+    setBookingData({ startDate: '', endDate: '' })
     setBookingError('')
     setBookingSuccess('')
     setIsBookingModalOpen(true)
@@ -161,7 +161,7 @@ export function WorkspacesPage() {
   const closeBookingModal = () => {
     setIsBookingModalOpen(false)
     setBookingWorkspace(null)
-    setBookingData({ startTime: '', endTime: '' })
+    setBookingData({ startDate: '', endDate: '' })
     setBookingError('')
     setBookingSuccess('')
   }
@@ -278,7 +278,7 @@ export function WorkspacesPage() {
             <div className={infoBoxStyles}>
               <p className="text-sm">
                 <span className="text-muted-foreground">Цена:</span>{' '}
-                <span className="font-semibold">{bookingWorkspace.pricePerHour} руб/час</span>
+                <span className="font-semibold">{bookingWorkspace.pricePerHour} руб/день</span>
               </p>
               <p className="text-sm">
                 <span className="text-muted-foreground">Вместимость:</span>{' '}
@@ -288,17 +288,17 @@ export function WorkspacesPage() {
           )}
 
           <Input
-            label="Дата и время начала"
-            type="datetime-local"
-            value={bookingData.startTime}
-            onChange={(e) => setBookingData({ ...bookingData, startTime: e.target.value })}
+            label="Дата начала"
+            type="date"
+            value={bookingData.startDate}
+            onChange={(e) => setBookingData({ ...bookingData, startDate: e.target.value })}
             required
           />
           <Input
-            label="Дата и время окончания"
-            type="datetime-local"
-            value={bookingData.endTime}
-            onChange={(e) => setBookingData({ ...bookingData, endTime: e.target.value })}
+            label="Дата окончания"
+            type="date"
+            value={bookingData.endDate}
+            onChange={(e) => setBookingData({ ...bookingData, endDate: e.target.value })}
             required
           />
           <div className="flex justify-end gap-2">
@@ -372,7 +372,7 @@ function WorkspaceCard({
           />
           <InfoRow
             label="Цена"
-            value={`${workspace.pricePerHour} руб/час`}
+            value={`${workspace.pricePerHour} руб/день`}
             valueClassName="font-semibold text-primary"
           />
           {workspace.phoneNumber && (

@@ -1,6 +1,7 @@
 package com.example.coworking.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,10 +36,12 @@ public class Booking {
   private Long id;
 
   @ToString.Include
-  private LocalDateTime startTime;
+  @Column(name = "start_date")
+  private LocalDate startDate;
 
   @ToString.Include
-  private LocalDateTime endTime;
+  @Column(name = "end_date")
+  private LocalDate endDate;
 
   @ToString.Include
   private LocalDateTime createdAt;

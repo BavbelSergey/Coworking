@@ -32,8 +32,8 @@ function AdminBookingsView() {
   const [page, setPage] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState<BookingCreate>({
-    startTime: '',
-    endTime: '',
+    startDate: '',
+    endDate: '',
     userId: 0,
     workspaceId: 0,
   })
@@ -51,8 +51,8 @@ function AdminBookingsView() {
     try {
       const payload = {
         ...formData,
-        startTime: new Date(formData.startTime).toISOString(),
-        endTime: new Date(formData.endTime).toISOString(),
+        startDate: formData.startDate,
+        endDate: formData.endDate,
       }
       await bookings.create(payload)
       mutate(['bookings', page])
@@ -93,8 +93,8 @@ function AdminBookingsView() {
 
   const openModal = () => {
     setFormData({
-      startTime: '',
-      endTime: '',
+      startDate: '',
+      endDate: '',
       userId: usersData?.content[0]?.id || 0,
       workspaceId: workspacesData?.content[0]?.id || 0,
     })
@@ -103,12 +103,12 @@ function AdminBookingsView() {
 
   const closeModal = () => {
     setIsModalOpen(false)
-    setFormData({ startTime: '', endTime: '', userId: 0, workspaceId: 0 })
+    setFormData({ startDate: '', endDate: '', userId: 0, workspaceId: 0 })
   }
 
-  const formatDateTime = (dateStr: string) => {
+  const formatDate = (dateStr: string) => {
     try {
-      return format(new Date(dateStr.replace(' ', 'T')), 'dd MMM yyyy, HH:mm', { locale: ru })
+      return format(new Date(dateStr), 'dd MMM yyyy', { locale: ru })
     } catch {
       return dateStr
     }
@@ -165,8 +165,8 @@ function AdminBookingsView() {
                         </div>
                       </TableCell>
                       <TableCell>{booking.workspaceName}</TableCell>
-                      <TableCell>{formatDateTime(booking.startTime)}</TableCell>
-                      <TableCell>{formatDateTime(booking.endTime)}</TableCell>
+                      <TableCell>{formatDate(booking.startDate)}</TableCell>
+                      <TableCell>{formatDate(booking.endDate)}</TableCell>
                       <TableCell>
                         <Badge variant={statusVariants[booking.status]}>
                           {statusLabels[booking.status]}
@@ -254,20 +254,20 @@ function AdminBookingsView() {
             label="Рабочее место"
             value={String(formData.workspaceId)}
             onChange={(e) => setFormData({ ...formData, workspaceId: parseInt(e.target.value) })}
-            options={workspacesData?.content.map(w => ({ value: String(w.id), label: `${w.name} (${w.pricePerHour} руб/час)` })) || []}
+            options={workspacesData?.content.map(w => ({ value: String(w.id), label: `${w.name} (${w.pricePerHour} руб/день)` })) || []}
           />
           <Input
             label="Начало"
-            type="datetime-local"
-            value={formData.startTime}
-            onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+            type="date"
+            value={formData.startDate}
+            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
             required
           />
           <Input
             label="Окончание"
-            type="datetime-local"
-            value={formData.endTime}
-            onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+            type="date"
+            value={formData.endDate}
+            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
             required
           />
           <div className="flex justify-end gap-2">
@@ -297,7 +297,7 @@ function UserBookingsView() {
   )
 
   const handleCancel = async (id: number) => {
-    if (confirm('Вы уверены, что хотите отменить бронирование?')) {
+    if (confirm('Вы уверены, что хотите отме��ить бронирование?')) {
       try {
         await bookings.cancel(id)
         mutate(`user-bookings-${currentUser?.id}`)
@@ -307,9 +307,9 @@ function UserBookingsView() {
     }
   }
 
-  const formatDateTime = (dateStr: string) => {
+  const formatDate = (dateStr: string) => {
     try {
-      return format(new Date(dateStr.replace(' ', 'T')), 'dd MMM yyyy, HH:mm', { locale: ru })
+      return format(new Date(dateStr), 'dd MMM yyyy', { locale: ru })
     } catch {
       return dateStr
     }
@@ -347,7 +347,7 @@ function UserBookingsView() {
                     <div>
                       <p className="font-medium">Начало</p>
                       <p className="text-[hsl(var(--muted-foreground))]">
-                        {formatDateTime(booking.startTime)}
+                        {formatDate(booking.startDate)}
                       </p>
                     </div>
                   </div>
@@ -356,12 +356,12 @@ function UserBookingsView() {
                     <div>
                       <p className="font-medium">Окончание</p>
                       <p className="text-[hsl(var(--muted-foreground))]">
-                        {formatDateTime(booking.endTime)}
+                        {formatDate(booking.endDate)}
                       </p>
                     </div>
                   </div>
                   <div className="text-xs text-[hsl(var(--muted-foreground))]">
-                    Создано: {formatDateTime(booking.createdAt)}
+                    Создано: {formatDate(booking.createdAt)}
                   </div>
 
                   {booking.status === 'PENDING' && (
