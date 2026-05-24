@@ -117,7 +117,6 @@ export function AmenitiesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Название</TableHead>
                     <TableHead>Описание</TableHead>
                     <TableHead className="text-right">Действия</TableHead>
@@ -126,7 +125,6 @@ export function AmenitiesPage() {
                 <TableBody>
                   {displayAmenities?.map((amenity) => (
                     <TableRow key={amenity.id}>
-                      <TableCell className="font-medium">{amenity.id}</TableCell>
                       <TableCell>
                         <span className="font-medium">{amenity.name}</span>
                       </TableCell>
@@ -161,7 +159,13 @@ export function AmenitiesPage() {
               {!search && data && (
                 <div className="mt-4 flex items-center justify-between">
                   <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                    Показано {data.content.length} из {data.totalElements}
+                    {typeof data.totalElements !== 'undefined' ? (
+                      <>Показано {data.content.length} из {data.totalElements}</>
+                    ) : typeof data.totalPages !== 'undefined' ? (
+                      <>Показано {data.number + 1} из {data.totalPages}</>
+                    ) : (
+                      <>Показано {data.content.length}</>
+                    )}
                   </p>
                   <div className="flex gap-2">
                     <Button

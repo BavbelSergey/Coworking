@@ -731,4 +731,3 @@ class BookingServiceTest {
     }
   }
 }
-

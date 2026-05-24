@@ -118,7 +118,6 @@ export function UsersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Имя</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Телефон</TableHead>
@@ -129,7 +128,6 @@ export function UsersPage() {
                 <TableBody>
                   {displayUsers?.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.id}</TableCell>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.phone}</TableCell>
@@ -160,7 +158,13 @@ export function UsersPage() {
               {!search && data && (
                 <div className="mt-4 flex items-center justify-between">
                   <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                    Показано {data.content.length} из {data.totalElements}
+                    {typeof data.totalElements !== 'undefined' ? (
+                      <>Показано {data.content.length} из {data.totalElements}</>
+                    ) : typeof data.totalPages !== 'undefined' ? (
+                      <>Показано {data.number + 1} из {data.totalPages}</>
+                    ) : (
+                      <>Показано {data.content.length}</>
+                    )}
                   </p>
                   <div className="flex gap-2">
                     <Button

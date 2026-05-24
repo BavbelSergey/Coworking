@@ -120,7 +120,6 @@ export function PaymentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Сумма</TableHead>
                     <TableHead>Метод</TableHead>
                     <TableHead>Дата</TableHead>
@@ -132,7 +131,6 @@ export function PaymentsPage() {
                 <TableBody>
                   {data?.content.map((payment) => (
                     <TableRow key={payment.id}>
-                      <TableCell className="font-medium">{payment.id}</TableCell>
                       <TableCell>
                         <span className="font-semibold text-[hsl(var(--primary))]">
                           {payment.amount} руб
@@ -147,7 +145,7 @@ export function PaymentsPage() {
                       <TableCell>{payment.userName}</TableCell>
                       <TableCell>
                         <span className="text-sm text-[hsl(var(--muted-foreground))]">
-                          #{payment.bookingId}
+                          {bookingsData?.content.find(b => b.id === payment.bookingId)?.workspaceName || '—'}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
@@ -167,7 +165,13 @@ export function PaymentsPage() {
               {data && (
                 <div className="mt-4 flex items-center justify-between">
                   <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                    Показано {data.content.length} из {data.totalElements}
+                    {typeof data.totalElements !== 'undefined' ? (
+                      <>Показано {data.content.length} из {data.totalElements}</>
+                    ) : typeof data.totalPages !== 'undefined' ? (
+                      <>Показано {data.number + 1} из {data.totalPages}</>
+                    ) : (
+                      <>Показано {data.content.length}</>
+                    )}
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -206,7 +210,7 @@ export function PaymentsPage() {
             onChange={(e) => setFormData({ ...formData, bookingId: parseInt(e.target.value) })}
             options={bookingsData?.content.map(b => ({
               value: String(b.id),
-              label: `#${b.id} - ${b.userName} (${b.workspaceName})`
+              label: `${b.userName} (${b.workspaceName})`
             })) || []}
           />
           <Input

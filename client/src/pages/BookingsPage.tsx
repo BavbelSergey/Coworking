@@ -9,7 +9,7 @@ import { Select } from '../components/ui/Select'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table'
 import { useAuth } from '../context/AuthContext'
 import { bookings, users, workspaces, auth } from '../lib/api'
-import { Plus, Trash2, Check, X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import { Trash2, Check, X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import type { Booking, BookingCreate, User, Workspace, Page, BookingStatus } from '../types'
@@ -91,15 +91,7 @@ function AdminBookingsView() {
     }
   }
 
-  const openModal = () => {
-    setFormData({
-      startDate: '',
-      endDate: '',
-      userId: usersData?.content[0]?.id || 0,
-      workspaceId: workspacesData?.content[0]?.id || 0,
-    })
-    setIsModalOpen(true)
-  }
+  // Creation of bookings is done via the "Забронировать" button on the Workspaces page
 
   const closeModal = () => {
     setIsModalOpen(false)
@@ -116,18 +108,14 @@ function AdminBookingsView() {
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Бронирования</h1>
-          <p className="text-[hsl(var(--muted-foreground))]">
-            Управление всеми бронированиями рабочих мест
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Бронирования</h1>
+            <p className="text-[hsl(var(--muted-foreground))]">
+              Управление всеми бронированиями рабочих мест
+            </p>
+          </div>
         </div>
-        <Button onClick={openModal}>
-          <Plus className="h-4 w-4" />
-          Создать бронирование
-        </Button>
-      </div>
 
       <Card>
         <CardHeader>
@@ -143,7 +131,6 @@ function AdminBookingsView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Пользователь</TableHead>
                     <TableHead>Рабочее место</TableHead>
                     <TableHead>Начало</TableHead>
@@ -155,7 +142,6 @@ function AdminBookingsView() {
                 <TableBody>
                   {data?.content.map((booking) => (
                     <TableRow key={booking.id}>
-                      <TableCell className="font-medium">{booking.id}</TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium">{booking.userName}</p>
@@ -208,11 +194,17 @@ function AdminBookingsView() {
                 </TableBody>
               </Table>
 
-              {data && (
-                <div className="mt-4 flex items-center justify-between">
-                  <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                    Показано {data.content.length} из {data.totalElements}
-                  </p>
+               {data && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                      {typeof data.totalElements !== 'undefined' ? (
+                        <>Показано {data.content.length} из {data.totalElements}</>
+                      ) : typeof data.totalPages !== 'undefined' ? (
+                        <>Показано {data.number + 1} из {data.totalPages}</>
+                      ) : (
+                        <>Показано {data.content.length}</>
+                      )}
+                    </p>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"

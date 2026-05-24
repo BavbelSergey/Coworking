@@ -48,7 +48,7 @@ export interface WorkspaceCreate {
   phoneNumber?: string
   capacity: number
   pricePerHour: number
-  amenityIds?: number[]
+  amenities?: Pick<Amenity, 'id'>[]
 }
 
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'

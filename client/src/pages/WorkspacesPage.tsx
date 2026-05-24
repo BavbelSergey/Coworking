@@ -4,9 +4,10 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Modal } from '../components/ui/Modal'
+import { Select } from '../components/ui/Select'
 import { Badge } from '../components/ui/Badge'
 import { useAuth } from '../context/AuthContext'
-import { workspaces, amenities, bookings, users, auth } from '../lib/api'
+import { workspaces, amenities, bookings, users, payments, auth } from '../lib/api'
 import { layout, form, cn } from '../lib/styles'
 import { Plus, Pencil, Trash2, Users, ChevronLeft, ChevronRight, Wifi, Calendar } from 'lucide-react'
 import type { Workspace, WorkspaceCreate, Amenity, Page, User, BookingCreate } from '../types'
@@ -36,12 +37,14 @@ export function WorkspacesPage() {
     capacity: 1,
     pricePerHour: 0,
   })
+  const [selectedAmenityIds, setSelectedAmenityIds] = useState<number[]>([])
   const [bookingData, setBookingData] = useState({
     startDate: '',
     endDate: '',
   })
   const [bookingError, setBookingError] = useState('')
   const [bookingSuccess, setBookingSuccess] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('CARD')
 
   const decoded = auth.getDecodedToken()
   const userEmail = decoded?.sub || ''
@@ -64,10 +67,15 @@ export function WorkspacesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      const workspacePayload = {
+        ...formData,
+        amenities: selectedAmenityIds.map((id) => ({ id })),
+      }
+
       if (editingWorkspace) {
-        await workspaces.update(editingWorkspace.id, formData)
+        await workspaces.update(editingWorkspace.id, workspacePayload)
       } else {
-        await workspaces.create(formData)
+        await workspaces.create(workspacePayload)
       }
       mutate(['workspaces', page])
       closeModal()
@@ -100,6 +108,14 @@ export function WorkspacesPage() {
     }
   }
 
+  const toggleSelectedAmenity = (amenityId: number) => {
+    setSelectedAmenityIds((ids) =>
+      ids.includes(amenityId)
+        ? ids.filter((id) => id !== amenityId)
+        : [...ids, amenityId]
+    )
+  }
+
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setBookingError('')
@@ -117,7 +133,19 @@ export function WorkspacesPage() {
         userId: currentUser.id,
         workspaceId: bookingWorkspace.id,
       }
-      await bookings.create(bookingPayload)
+      const created = await bookings.create(bookingPayload)
+
+      try {
+        const amount = computeBookingAmount(
+          bookingWorkspace.pricePerHour,
+          bookingData.startDate,
+          bookingData.endDate
+        )
+        await payments.create({ amount, paymentMethod, bookingId: created.id })
+      } catch (err) {
+        console.error('Payment creation failed:', err)
+      }
+
       setBookingSuccess('Бронирование успешно создано!')
       setTimeout(() => {
         closeBookingModal()
@@ -128,6 +156,27 @@ export function WorkspacesPage() {
     }
   }
 
+  const computeBookingAmount = (pricePerDay: number, start: string, end: string) => {
+    try {
+      const s = new Date(start)
+      const e = new Date(end)
+      const diff = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24))
+      if (!Number.isFinite(diff)) {
+        return pricePerDay
+      }
+      const days = Math.max(1, diff + 1)
+      return pricePerDay * days
+    } catch {
+      return pricePerDay
+    }
+  }
+
+  const formatAmount = (amount: number) =>
+    amount.toLocaleString('ru-RU', {
+      minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    })
+
   const openModal = (workspace?: Workspace) => {
     if (workspace) {
       setEditingWorkspace(workspace)
@@ -137,9 +186,11 @@ export function WorkspacesPage() {
         capacity: workspace.capacity,
         pricePerHour: workspace.pricePerHour,
       })
+      setSelectedAmenityIds(workspace.amenities?.map((amenity) => amenity.id) || [])
     } else {
       setEditingWorkspace(null)
       setFormData({ name: '', phoneNumber: '', capacity: 1, pricePerHour: 0 })
+      setSelectedAmenityIds([])
     }
     setIsModalOpen(true)
   }
@@ -148,6 +199,7 @@ export function WorkspacesPage() {
     setIsModalOpen(false)
     setEditingWorkspace(null)
     setFormData({ name: '', phoneNumber: '', capacity: 1, pricePerHour: 0 })
+    setSelectedAmenityIds([])
   }
 
   const openBookingModal = (workspace: Workspace) => {
@@ -155,6 +207,7 @@ export function WorkspacesPage() {
     setBookingData({ startDate: '', endDate: '' })
     setBookingError('')
     setBookingSuccess('')
+    setPaymentMethod('CARD')
     setIsBookingModalOpen(true)
   }
 
@@ -208,6 +261,8 @@ export function WorkspacesPage() {
             <Pagination
               current={data.content.length}
               total={data.totalElements}
+              totalPages={data.totalPages}
+              pageNumber={data.number}
               isFirst={data.first}
               isLast={data.last}
               onPrev={() => setPage(p => p - 1)}
@@ -253,6 +308,28 @@ export function WorkspacesPage() {
             onChange={(e) => setFormData({ ...formData, pricePerHour: parseFloat(e.target.value) })}
             required
           />
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Удобства</p>
+            {amenitiesData?.content.length ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {amenitiesData.content.map((amenity) => (
+                  <label
+                    key={amenity.id}
+                    className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedAmenityIds.includes(amenity.id)}
+                      onChange={() => toggleSelectedAmenity(amenity.id)}
+                    />
+                    <span>{amenity.name}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Список удобств пуст</p>
+            )}
+          </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={closeModal}>
               Отмена
@@ -301,6 +378,35 @@ export function WorkspacesPage() {
             onChange={(e) => setBookingData({ ...bookingData, endDate: e.target.value })}
             required
           />
+
+          <div className="pt-2">
+            <div className="space-y-2">
+              <Select
+                label="Метод оплаты"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                options={[
+                  { value: 'CARD', label: 'Карта' },
+                  { value: 'CASH', label: 'Наличные' },
+                  { value: 'TRANSFER', label: 'Перевод' },
+                ]}
+              />
+              <div className={infoBoxStyles}>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Сумма:</span>{' '}
+                  <span className="font-semibold">
+                    {bookingWorkspace
+                      ? `${formatAmount(computeBookingAmount(
+                          bookingWorkspace.pricePerHour,
+                          bookingData.startDate,
+                          bookingData.endDate
+                        ))} руб`
+                      : '0 руб'}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={closeBookingModal}>
               Отмена
@@ -451,18 +557,26 @@ function InfoRow({ icon, label, value, valueClassName = 'font-medium' }: InfoRow
 
 interface PaginationProps {
   current: number
-  total: number
+  total?: number
+  totalPages?: number
+  pageNumber?: number
   isFirst: boolean
   isLast: boolean
   onPrev: () => void
   onNext: () => void
 }
 
-function Pagination({ current, total, isFirst, isLast, onPrev, onNext }: PaginationProps) {
+function Pagination({ current, total, totalPages, pageNumber, isFirst, isLast, onPrev, onNext }: PaginationProps) {
   return (
     <div className={layout.flexBetween}>
       <p className="text-sm text-muted-foreground">
-        Показано {current} из {total}
+        {typeof total !== 'undefined' ? (
+          <>Показано {current} из {total}</>
+        ) : typeof totalPages !== 'undefined' && typeof pageNumber !== 'undefined' ? (
+          <>Показано {pageNumber + 1} из {totalPages}</>
+        ) : (
+          <>Показано {current}</>
+        )}
       </p>
       <div className={layout.flexGap2}>
         <Button variant="outline" size="sm" onClick={onPrev} disabled={isFirst}>

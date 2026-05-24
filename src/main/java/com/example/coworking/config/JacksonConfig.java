@@ -1,16 +1,15 @@
 package com.example.coworking.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 public class JacksonConfig {
@@ -18,10 +17,11 @@ public class JacksonConfig {
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
 
         // Custom serializer for Page to match frontend expectations
+        // Flattens the Page object so totalElements/totalPages are at root level, not nested
         module.addSerializer(new JsonSerializer<Page<?>>() {
             @Override
             public void serialize(Page<?> page, JsonGenerator gen, SerializerProvider serializers)
@@ -39,11 +39,13 @@ public class JacksonConfig {
 
             @Override
             public Class<Page<?>> handledType() {
-                return (Class<Page<?>>) (Class<?>) Page.class;
+                @SuppressWarnings("unchecked")
+                Class<Page<?>> pageClass = (Class<Page<?>>) (Class<?>) Page.class;
+                return pageClass;
             }
         });
 
-        objectMapper.registerModule(module);
-        return objectMapper;
+        mapper.registerModule(module);
+        return mapper;
     }
 }

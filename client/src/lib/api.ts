@@ -58,7 +58,40 @@ async function fetchApi<T>(
     return undefined as T
   }
 
-  return response.json()
+  const data = await response.json()
+
+  // Normalize page responses from backend
+  // Backend may return: { content, totalElements, totalPages, ... } (flat)
+  // Or: { content, page: { totalElements, totalPages, ... } } (nested)
+  // We always normalize to flat structure: { content, totalElements, totalPages, ... }
+
+  if (data && typeof data === 'object' && data.content) {
+    if (data.page && typeof data.page === 'object') {
+      // Nested structure: extract page metadata
+      return {
+        content: data.content,
+        totalElements: data.page.totalElements ?? 0,
+        totalPages: data.page.totalPages ?? 0,
+        size: data.page.size ?? data.content.length,
+        number: data.page.number ?? 0,
+        first: data.page.first !== false,
+        last: data.page.last !== false,
+      } as T
+    } else if (typeof data.totalElements !== 'undefined' || typeof data.totalPages !== 'undefined') {
+      // Already flat structure, just ensure all fields exist
+      return {
+        content: data.content,
+        totalElements: data.totalElements ?? 0,
+        totalPages: data.totalPages ?? 0,
+        size: data.size ?? data.content.length,
+        number: data.number ?? 0,
+        first: data.first !== false,
+        last: data.last !== false,
+      } as T
+    }
+  }
+
+  return data
 }
 
 // Helper to decode JWT
@@ -142,7 +175,7 @@ export const workspaces = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  update: (id: number, data: Partial<Workspace>) =>
+  update: (id: number, data: Partial<WorkspaceCreate>) =>
     fetchApi<Workspace>(`/workspaces/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
