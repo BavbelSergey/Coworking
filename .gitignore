@@ -1,5 +1,5 @@
 # Maven / Java
-target/
+backend/target/
 *.class
 *.jar
 *.war
@@ -9,7 +9,7 @@ hs_err_pid*
 replay_pid*
 
 # Maven wrapper cache
-.mvn/wrapper/maven-wrapper.jar
+backend/.mvn/wrapper/maven-wrapper.jar
 
 # Spring Boot / runtime
 logs/
@@ -18,26 +18,26 @@ log/
 *.log.*
 *.pid
 
-# Node / Vite client
-client/node_modules/
-client/dist/
-client/.vite/
-client/.cache/
-client/coverage/
-client/npm-debug.log*
-client/yarn-debug.log*
-client/yarn-error.log*
-client/pnpm-debug.log*
+# Node / Vite frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+frontend/coverage/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
 
 # Environment files
 .env
 .env.*
 !.env.example
 !.env.*.example
-client/.env
-client/.env.*
-!client/.env.example
-!client/.env.*.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+!frontend/.env.*.example
 
 # IDEs and editors
 .idea/

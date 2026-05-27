@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<suppressions>
-  <suppress checks="JavadocMethod" files=".*" />
-  <suppress checks="JavadocType" files=".*" />
-  <suppress checks="MissingJavadocMethod" files=".*" />
-  <suppress checks="MissingJavadocType" files=".*" />
-  <suppress checks="JavadocVariable" files=".*" />
-  <suppress checks="SummaryJavadoc" files=".*" />
-</suppressions>

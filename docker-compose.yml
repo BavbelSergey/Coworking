@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: coworkingsdb
+      POSTGRES_USER: serega
+      POSTGRES_PASSWORD: 1234
+      JWT_SECRET: Y4EbqEmathW7uFinoTk7D6+IEkg82+zD+Wpovnnc9BQ=
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U serega -d coworkingsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/coworkingsdb
+      SPRING_DATASOURCE_USERNAME: serega
+      SPRING_DATASOURCE_PASSWORD: 1234
+      JWT_SECRET: Y4EbqEmathW7uFinoTk7D6+IEkg82+zD+Wpovnnc9BQ=
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  postgres-data:
