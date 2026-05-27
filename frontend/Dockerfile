@@ -2,8 +2,8 @@ FROM node:24-alpine AS build
 
 WORKDIR /app
 
-ARG BACKEND_URL
-ENV BACKEND_URL=$BACKEND_URL
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 
 COPY package*.json ./
 RUN npm ci
