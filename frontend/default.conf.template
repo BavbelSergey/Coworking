@@ -1,9 +1,6 @@
 server {
     listen 80;
 
-    resolver 127.0.0.11 valid=5s ipv6=off;
-    resolver_timeout 5s;
-
     root /usr/share/nginx/html;
     index index.html;
 
@@ -12,13 +9,12 @@ server {
     }
 
     location /api/ {
-        set $backend "${BACKEND_HOST}:${BACKEND_PORT}";
-        proxy_pass http://$backend/;
+        proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT}/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-
+        
         proxy_connect_timeout 10s;
         proxy_send_timeout 30s;
         proxy_read_timeout 30s;
