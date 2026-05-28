@@ -8,11 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/health")
 @Tag(name = "Health", description = "Application healthcheck")
 public class HealthController {
 
-  @GetMapping
+  @GetMapping({"/api/health", "/health", "/actuator/health"})
   @Operation(summary = "Check application health")
   public HealthResponseDto health() {
     return new HealthResponseDto("UP");
