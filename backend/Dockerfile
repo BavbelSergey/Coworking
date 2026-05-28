@@ -6,7 +6,7 @@ COPY pom.xml .
 RUN mvn -B dependency:go-offline
 
 COPY src ./src
-COPY checkstyle-suppressions.xml .
+COPY ../checkstyle-suppressions.xml .
 RUN mvn -B package -DskipTests
 
 FROM eclipse-temurin:21-jre

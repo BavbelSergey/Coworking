@@ -66,8 +66,7 @@ public class WorkspaceService {
     Workspace workspace = workspaceMapper.toEntity(workspaceDto);
 
     if (workspaceDto.getAmenities() != null && !workspaceDto.getAmenities().isEmpty()) {
-      List<Long> amenityIds = workspaceDto.getAmenities().stream()
-          .map(AmenityDto::getId)
+      List<Long> amenityIds = workspaceDto.getAmenities().stream().map(AmenityDto::getId)
           .collect(Collectors.toList());
       List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
       workspace.setAmenities(amenities);
@@ -75,15 +74,15 @@ public class WorkspaceService {
     }
 
     Workspace savedWorkspace = workspaceRepository.save(workspace);
-    log.info("Successfully created workspace: id={}, name={}, capacity={}",
-        savedWorkspace.getId(), savedWorkspace.getName(), savedWorkspace.getCapacity());
+    log.info("Successfully created workspace: id={}, name={}, capacity={}", savedWorkspace.getId(),
+        savedWorkspace.getName(), savedWorkspace.getCapacity());
     return workspaceMapper.toDto(savedWorkspace);
   }
 
   @Transactional
   public WorkspaceDto updateWorkspace(Long id, WorkspaceDto workspaceDto) {
-    log.info("Updating workspace (full): id={}, name={}, capacity={}, pricePerHour={}",
-        id, workspaceDto.getName(), workspaceDto.getCapacity(), workspaceDto.getPricePerHour());
+    log.info("Updating workspace (full): id={}, name={}, capacity={}, pricePerHour={}", id,
+        workspaceDto.getName(), workspaceDto.getCapacity(), workspaceDto.getPricePerHour());
 
     Optional<Workspace> workspaceOpt = workspaceRepository.findById(id);
     if (workspaceOpt.isEmpty()) {
@@ -94,27 +93,26 @@ public class WorkspaceService {
 
     if (!Objects.equals(workspace.getName(), workspaceDto.getName())
         && workspaceRepository.existsByName(workspaceDto.getName())) {
-      log.warn("Cannot update workspace id={} — name already taken: {}",
-          id, workspaceDto.getName());
+      log.warn("Cannot update workspace id={} — name already taken: {}", id,
+          workspaceDto.getName());
       throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NAME);
     }
 
-    String oldName = workspace.getName();
     workspace.setName(workspaceDto.getName());
     workspace.setPhoneNumber(workspaceDto.getPhoneNumber());
     workspace.setCapacity(workspaceDto.getCapacity());
     workspace.setPricePerHour(workspaceDto.getPricePerHour());
+    String oldName = workspace.getName();
 
     WorkspaceDto result = getWorkspaceDto(workspaceDto, workspace);
-    log.info("Successfully updated workspace (full): id={}, oldName={}, newName={}",
-        id, oldName, workspaceDto.getName());
+    log.info("Successfully updated workspace (full): id={}, oldName={}, newName={}", id, oldName,
+        workspaceDto.getName());
     return result;
   }
 
   private WorkspaceDto getWorkspaceDto(WorkspaceDto workspaceDto, Workspace workspace) {
     if (workspaceDto.getAmenities() != null) {
-      List<Long> amenityIds = workspaceDto.getAmenities().stream()
-          .map(AmenityDto::getId).toList();
+      List<Long> amenityIds = workspaceDto.getAmenities().stream().map(AmenityDto::getId).toList();
       List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
       workspace.setAmenities(amenities);
     }
@@ -134,19 +132,18 @@ public class WorkspaceService {
     }
     Workspace workspace = workspaceOpt.get();
 
-    if (workspaceDto.getName() != null
-        && !Objects.equals(workspace.getName(), workspaceDto.getName())
-        && workspaceRepository.existsByName(workspaceDto.getName())) {
-      log.warn("Cannot partially update workspace id={} — name already taken: {}",
-          id, workspaceDto.getName());
+    if (workspaceDto.getName() != null && !Objects.equals(workspace.getName(),
+        workspaceDto.getName()) && workspaceRepository.existsByName(workspaceDto.getName())) {
+      log.warn("Cannot partially update workspace id={} — name already taken: {}", id,
+          workspaceDto.getName());
       throw new ConflictException(ErrorCode.WORKSPACE_EXISTS_WITH_NAME);
     }
 
     String oldName = workspace.getName();
     workspaceMapper.updateEntity(workspaceDto, workspace);
     Workspace updatedWorkspace = workspaceRepository.save(workspace);
-    log.info("Successfully partially updated workspace: id={}, oldName={}, newName={}",
-        id, oldName, updatedWorkspace.getName());
+    log.info("Successfully partially updated workspace: id={}, oldName={}, newName={}", id, oldName,
+        updatedWorkspace.getName());
     return workspaceMapper.toDto(updatedWorkspace);
   }
 
@@ -161,13 +158,12 @@ public class WorkspaceService {
     }
     Workspace workspace = workspaceOpt.get();
 
-    boolean hasActiveBookings = workspace.getBookings() != null
-        && workspace.getBookings().stream()
+    boolean hasActiveBookings = workspace.getBookings() != null && workspace.getBookings().stream()
         .anyMatch(booking -> booking.getStatus() == BookingStatus.CONFIRMED);
 
     if (hasActiveBookings) {
-      log.warn("Cannot delete workspace id={}, name={} — has active (CONFIRMED) bookings",
-          id, workspace.getName());
+      log.warn("Cannot delete workspace id={}, name={} — has active (CONFIRMED) bookings", id,
+          workspace.getName());
       throw new ConflictException(ErrorCode.WORKSPACE_HAS_ACTIVE_BOOKINGS);
     }
 
@@ -182,17 +178,13 @@ public class WorkspaceService {
 
     BigDecimal maxPriceDecimal = maxPrice != null ? BigDecimal.valueOf(maxPrice) : null;
 
-    List<Workspace> workspaces = workspaceRepository.findAvailableWorkspaces(
-        minCapacity, maxPriceDecimal);
+    List<Workspace> workspaces = workspaceRepository.findAvailableWorkspaces(minCapacity,
+        maxPriceDecimal);
 
     if (amenityIds != null && !amenityIds.isEmpty()) {
-      workspaces = workspaces.stream()
-          .filter(w -> w.getAmenities() != null
-              && w.getAmenities().stream()
-              .map(Amenity::getId)
-              .collect(Collectors.toSet())
-              .containsAll(amenityIds))
-          .toList();
+      workspaces = workspaces.stream().filter(
+          w -> w.getAmenities() != null && w.getAmenities().stream().map(Amenity::getId)
+              .collect(Collectors.toSet()).containsAll(amenityIds)).toList();
     }
 
     return workspaceMapper.toDtoList(workspaces);
@@ -289,13 +281,12 @@ public class WorkspaceService {
     }
     Workspace workspace = workspaceOpt.get();
 
-    boolean hasActiveBookings = workspace.getBookings() != null
-        && workspace.getBookings().stream()
+    boolean hasActiveBookings = workspace.getBookings() != null && workspace.getBookings().stream()
         .anyMatch(booking -> booking.getStatus() == BookingStatus.CONFIRMED);
 
     if (hasActiveBookings) {
-      log.warn("Cannot delete workspace name={}, id={} — has active (CONFIRMED) bookings",
-          name, workspace.getId());
+      log.warn("Cannot delete workspace name={}, id={} — has active (CONFIRMED) bookings", name,
+          workspace.getId());
       throw new ConflictException(ErrorCode.WORKSPACE_HAS_ACTIVE_BOOKINGS);
     }
 
