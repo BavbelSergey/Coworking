@@ -100,9 +100,15 @@ jobs:
 
       - name: Deploy backend
         run: |
-          railway up --service ${{ secrets.RAILWAY_BACKEND_SERVICE }} ./backend
+          railway up ./backend \
+            --path-as-root \
+            --ci \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT" \
+            --service "$RAILWAY_BACKEND_SERVICE"
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_BACKEND_SERVICE: ${{ secrets.RAILWAY_BACKEND_SERVICE }}
 
   # ========== ДЕПЛОЙ ФРОНТЕНДА ==========
   deploy-frontend:
@@ -123,9 +129,15 @@ jobs:
 
       - name: Deploy frontend
         run: |
-          railway up --service ${{ secrets.RAILWAY_FRONTEND_SERVICE }} ./frontend
+          railway up ./frontend \
+            --path-as-root \
+            --ci \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT" \
+            --service "$RAILWAY_FRONTEND_SERVICE"
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_FRONTEND_SERVICE: ${{ secrets.RAILWAY_FRONTEND_SERVICE }}
           VITE_API_URL: ''
 
   # ========== HEALTH CHECK ==========
