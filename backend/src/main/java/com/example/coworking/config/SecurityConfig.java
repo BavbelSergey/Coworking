@@ -48,6 +48,7 @@ public class SecurityConfig {
                 "/swagger-ui.html", "/error", "/swagger-resources/**",  // ← ДОБАВИТЬ
                 "/swagger-resources",     // ← ДОБАВИТЬ
                 "/webjars/**").permitAll().requestMatchers(HttpMethod.POST, "/api/users")
+            .permitAll().requestMatchers(HttpMethod.GET, "/api/health")
             .permitAll().requestMatchers(HttpMethod.GET, "/api/workspaces/**")
             .hasAnyRole("ADMIN", "USER").requestMatchers(HttpMethod.GET, "/api/amenities/**")
             .hasAnyRole("ADMIN", "USER").requestMatchers(HttpMethod.POST, "/api/bookings")
