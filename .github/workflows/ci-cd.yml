@@ -101,7 +101,6 @@ jobs:
       - name: Deploy backend
         run: |
           railway up ./backend \
-            --path-as-root \
             --ci \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT" \
@@ -130,7 +129,6 @@ jobs:
       - name: Deploy frontend
         run: |
           railway up ./frontend \
-            --path-as-root \
             --ci \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT" \
