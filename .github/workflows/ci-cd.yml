@@ -99,8 +99,9 @@ jobs:
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
 
       - name: Deploy backend
+        working-directory: ./backend
         run: |
-          railway up ./backend \
+          railway up \
             --ci \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT" \
@@ -127,8 +128,9 @@ jobs:
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
 
       - name: Deploy frontend
+        working-directory: ./frontend
         run: |
-          railway up ./frontend \
+          railway up \
             --ci \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT" \
