@@ -100,7 +100,7 @@ jobs:
 
       - name: Deploy backend
         run: |
-          railway up --service ${{ secrets.RAILWAY_BACKEND_SERVICE }} --detach ./backend
+          railway up --service ${{ secrets.RAILWAY_BACKEND_SERVICE }} ./backend
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
