@@ -1,5 +1,8 @@
 #!/bin/sh
 
+: "${BACKEND_HOST:=backend}"
+: "${BACKEND_PORT:=8080}"
+
 echo "=== ENTRYPOINT START ==="
 echo "BACKEND_HOST=$BACKEND_HOST"
 echo "BACKEND_PORT=$BACKEND_PORT"
