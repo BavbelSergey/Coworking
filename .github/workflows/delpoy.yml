@@ -36,8 +36,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           npm i -g @railway/cli
-          cd backend
-          railway up --detach --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ${{ secrets.RAILWAY_BACKEND_SERVICE }} --environment=production
+          railway up --detach --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ${{ secrets.RAILWAY_BACKEND_SERVICE }} --environment=production .
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -70,7 +69,6 @@ jobs:
         if: github.event_name == 'push'
         run: |
           npm i -g @railway/cli
-          cd frontend
-          railway up --detach --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ${{ secrets.RAILWAY_FRONTEND_SERVICE }} --environment=production
+          railway up --detach --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ${{ secrets.RAILWAY_FRONTEND_SERVICE }} --environment=production .
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
