@@ -1,7 +1,7 @@
 server {
     listen 80;
 
-    resolver 1.1.1.1 valid=5s ipv6=off;
+    resolver 127.0.0.11 valid=5s ipv6=off;
     resolver_timeout 5s;
 
     root /usr/share/nginx/html;
