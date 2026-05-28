@@ -82,4 +82,4 @@ jobs:
       - name: Check Backend Health
         run: |
           echo "Checking Backend..."
-          curl --fail --retry 5 --retry-delay 10 --retry-all-errors ${{secrets.BACKEND_HEALTHCHECK_URL}} || exit 1
+          curl --fail --retry 5 --retry-delay 10 --retry-all-errors ${{secrets.BACKEND_HEALTH_URL}} || exit 1
