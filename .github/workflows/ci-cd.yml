@@ -83,6 +83,40 @@ jobs:
 
   # ========== ДЕПЛОЙ БЭКЕНДА ==========
   deploy-backend:
+  name: Deploy Backend to Railway
+  needs: backend-test
+  if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Railway CLI
+      run: |
+        curl -fsSL https://railway.com/install.sh | sh
+        echo "$HOME/.railway/bin" >> $GITHUB_PATH
+
+    - name: Deploy backend
+      run: railway up --detach ./backend
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+
+    - name: Wait for backend to be ready
+      run: |
+        echo "Waiting for backend to start..."
+        sleep 30
+        for i in 1 2 3 4 5; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.BACKEND_HEALTH_URL }}")
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Backend is ready!"
+            exit 0
+          fi
+          echo "Attempt $i: status $STATUS, waiting..."
+          sleep 15
+        done
+        echo "❌ Backend failed to start!"
+        exit 1
     name: Deploy Backend to Railway
     needs: backend-test
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
