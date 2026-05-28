@@ -100,8 +100,7 @@ jobs:
 
       - name: Deploy backend
         run: |
-          cd backend
-          railway up --service ${{ secrets.RAILWAY_BACKEND_SERVICE }} --detach
+          railway up --service ${{ secrets.RAILWAY_BACKEND_SERVICE }} --detach ./backend
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -124,8 +123,7 @@ jobs:
 
       - name: Deploy frontend
         run: |
-          cd frontend
-          railway up --service ${{ secrets.RAILWAY_FRONTEND_SERVICE }} --detach
+          railway up --service ${{ secrets.RAILWAY_FRONTEND_SERVICE }} --detach ./backend
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           VITE_API_URL: ''
