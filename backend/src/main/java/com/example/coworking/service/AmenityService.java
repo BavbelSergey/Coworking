@@ -36,20 +36,22 @@ public class AmenityService {
 
   public AmenityDto getAmenityById(Long id) {
     log.debug("Fetching amenity by id: {}", id);
-    Amenity amenity = amenityRepository.findById(id).orElseThrow(() -> {
-      log.warn("Amenity not found with id: {}", id);
-      return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
-    });
+    Amenity amenity = amenityRepository.findById(id)
+        .orElseThrow(() -> {
+          log.warn("Amenity not found with id: {}", id);
+          return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
+        });
     log.info("Successfully fetched amenity: id={}, name={}", id, amenity.getName());
     return amenityMapper.toDto(amenity);
   }
 
   public AmenityDto getAmenityByName(String name) {
     log.debug("Fetching amenity by name: {}", name);
-    Amenity amenity = amenityRepository.findByName(name).orElseThrow(() -> {
-      log.warn("Amenity not found with name: {}", name);
-      return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
-    });
+    Amenity amenity = amenityRepository.findByName(name)
+        .orElseThrow(() -> {
+          log.warn("Amenity not found with name: {}", name);
+          return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
+        });
     log.info("Successfully fetched amenity: name={}, id={}", name, amenity.getId());
     return amenityMapper.toDto(amenity);
   }
@@ -65,8 +67,7 @@ public class AmenityService {
 
     Amenity amenity = amenityMapper.toEntity(createDto);
     Amenity savedAmenity = amenityRepository.save(amenity);
-    log.info("Successfully created amenity: id={}, name={}", savedAmenity.getId(),
-        savedAmenity.getName());
+    log.info("Successfully created amenity: id={}, name={}", savedAmenity.getId(), savedAmenity.getName());
     return amenityMapper.toDto(savedAmenity);
   }
 
@@ -74,12 +75,14 @@ public class AmenityService {
   public AmenityDto updateAmenity(Long id, AmenityUpdateDto updateDto) {
     log.info("Updating amenity: id={}, updateData={}", id, updateDto);
 
-    Amenity amenity = amenityRepository.findById(id).orElseThrow(() -> {
-      log.warn("Cannot update - amenity not found with id: {}", id);
-      return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
-    });
+    Amenity amenity = amenityRepository.findById(id)
+        .orElseThrow(() -> {
+          log.warn("Cannot update - amenity not found with id: {}", id);
+          return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
+        });
 
-    if (updateDto.getName() != null && !updateDto.getName().equals(amenity.getName())
+    if (updateDto.getName() != null
+        && !updateDto.getName().equals(amenity.getName())
         && amenityRepository.existsByName(updateDto.getName())) {
       log.warn("Cannot update amenity id={} - name '{}' already exists", id, updateDto.getName());
       throw new ConflictException(ErrorCode.AMENITY_EXISTS);
@@ -88,8 +91,8 @@ public class AmenityService {
     String oldName = amenity.getName();
     amenityMapper.updateEntity(updateDto, amenity);
     Amenity updatedAmenity = amenityRepository.save(amenity);
-    log.info("Successfully updated amenity: id={}, oldName={}, newName={}", id, oldName,
-        updatedAmenity.getName());
+    log.info("Successfully updated amenity: id={}, oldName={}, newName={}",
+        id, oldName, updatedAmenity.getName());
     return amenityMapper.toDto(updatedAmenity);
   }
 
@@ -97,14 +100,15 @@ public class AmenityService {
   public void deleteAmenity(Long id) {
     log.info("Attempting to delete amenity by id: {}", id);
 
-    Amenity amenity = amenityRepository.findById(id).orElseThrow(() -> {
-      log.warn("Cannot delete - amenity not found with id: {}", id);
-      return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
-    });
+    Amenity amenity = amenityRepository.findById(id)
+        .orElseThrow(() -> {
+          log.warn("Cannot delete - amenity not found with id: {}", id);
+          return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
+        });
 
     if (!amenity.getWorkspaces().isEmpty()) {
-      log.warn("Cannot delete amenity id={}, name={} - still used in {} workspaces", id,
-          amenity.getName(), amenity.getWorkspaces().size());
+      log.warn("Cannot delete amenity id={}, name={} - still used in {} workspaces",
+          id, amenity.getName(), amenity.getWorkspaces().size());
       throw new ConflictException(ErrorCode.AMENITY_IS_USED_IN_WORKSPACE);
     }
 
@@ -116,14 +120,15 @@ public class AmenityService {
   public void deleteAmenityByName(String name) {
     log.info("Attempting to delete amenity by name: {}", name);
 
-    Amenity amenity = amenityRepository.findByName(name).orElseThrow(() -> {
-      log.warn("Cannot delete - amenity not found with name: {}", name);
-      return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
-    });
+    Amenity amenity = amenityRepository.findByName(name)
+        .orElseThrow(() -> {
+          log.warn("Cannot delete - amenity not found with name: {}", name);
+          return new NotFoundException(ErrorCode.AMENITY_NOT_FOUND);
+        });
 
     if (!amenity.getWorkspaces().isEmpty()) {
-      log.warn("Cannot delete amenity name={}, id={} - still used in {} workspaces", name,
-          amenity.getId(), amenity.getWorkspaces().size());
+      log.warn("Cannot delete amenity name={}, id={} - still used in {} workspaces",
+          name, amenity.getId(), amenity.getWorkspaces().size());
       throw new ConflictException(ErrorCode.AMENITY_IS_USED_IN_WORKSPACE);
     }
 

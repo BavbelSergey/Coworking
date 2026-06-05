@@ -30,8 +30,7 @@ public class PaymentDto {
   @Schema(description = "Дата платежа", example = "2026-05-03 21:30:00")
   private LocalDateTime date;
 
-  @Schema(description = "Способ оплаты", example = "CARD", allowableValues = {"CARD", "CASH",
-      "TRANSFER"})
+  @Schema(description = "Способ оплаты", example = "CARD", allowableValues = {"CARD", "CASH", "TRANSFER"})
   private String paymentMethod;
 
   @Schema(description = "ID бронирования", example = "1")

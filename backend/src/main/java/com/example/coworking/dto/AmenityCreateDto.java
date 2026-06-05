@@ -21,7 +21,6 @@ public class AmenityCreateDto {
   private String name;
 
   @Size(max = 500, message = "Description cannot exceed 500 characters")
-  @Schema(description = "Описание удобства",
-      example = "Высокоскоростной интернет до 100 Мбит/с", maxLength = 500)
+  @Schema(description = "Описание удобства", example = "Высокоскоростной интернет до 100 Мбит/с", maxLength = 500)
   private String description;
 }

@@ -26,8 +26,7 @@ public class PaymentCreateDto {
 
   @NotNull(message = "Способ оплаты обязателен")
   @Pattern(regexp = "CARD|CASH|TRANSFER", message = "Способ оплаты CARD, CASH или TRANSFER")
-  @Schema(description = "Способ оплаты", example = "CARD", allowableValues = {"CARD", "CASH",
-      "TRANSFER"})
+  @Schema(description = "Способ оплаты", example = "CARD", allowableValues = {"CARD", "CASH", "TRANSFER"})
   private String paymentMethod;
 
   @NotNull(message = "ID брони обязателен")

@@ -17,7 +17,7 @@ import type {
   DecodedToken,
 } from '../types'
 
-const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
+const API_BASE = '/api'
 
 class ApiError extends Error {
   constructor(public status: number, message: string) {

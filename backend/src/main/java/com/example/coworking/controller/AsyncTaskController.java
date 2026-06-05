@@ -20,19 +20,16 @@ public class AsyncTaskController {
 
   private final AsyncTaskService asyncTaskService;
 
-  @Operation(summary = "Запуск асинхронной задачи", description =
-      "Создает и запускает новую асинхронную задачу для текущего пользователя")
+  @Operation(summary = "Запуск асинхронной задачи", description = "Создает и запускает новую асинхронную задачу для текущего пользователя")
   @PostMapping
   public AsyncTaskResponseDto startTask() {
     return asyncTaskService.startTask();
   }
 
-  @Operation(summary = "Получить статус задачи", description =
-      "Возвращает текущее состояние асинхронной задачи по её ID")
+  @Operation(summary = "Получить статус задачи", description = "Возвращает текущее состояние асинхронной задачи по её ID")
   @GetMapping("/{id}")
   public AsyncTaskResponseDto getStatus(
-      @Parameter(description = "Идентификатор задачи",
-          example = "task-12345") @PathVariable String id) {
+      @Parameter(description = "Идентификатор задачи", example = "task-12345") @PathVariable String id) {
     return asyncTaskService.getById(id);
   }
 }
