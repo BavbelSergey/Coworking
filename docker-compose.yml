@@ -1,42 +1,40 @@
 services:
   postgres:
     image: postgres:16-alpine
+    network_mode: host
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U serega -d coworkingsdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: ${POSTGRES_HEALTHCHECK_INTERVAL}
+      timeout: ${POSTGRES_HEALTHCHECK_TIMEOUT}
+      retries: ${POSTGRES_HEALTHCHECK_RETRIES}
 
   backend:
+    network_mode: host
     build:
       context: ./backend
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      PORT: ${BACKEND_CONTAINER_PORT}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://127.0.0.1:${POSTGRES_CONTAINER_PORT}/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGIN_PATTERNS: ${CORS_ALLOWED_ORIGIN_PATTERNS}
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "8080:8080"
 
   frontend:
+    network_mode: host
     build:
       context: ./frontend
     depends_on:
       - backend
-    ports:
-      - "3000:80"
 
 volumes:
   postgres-data:
