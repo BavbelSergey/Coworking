@@ -19,6 +19,7 @@ public class PaymentUpdateDto {
   @Schema(description = "Новая сумма платежа", example = "2000.00")
   private BigDecimal amount;
 
-  @Schema(description = "Новый способ оплаты", example = "TRANSFER", allowableValues = {"CARD", "CASH", "TRANSFER"})
+  @Schema(description = "Новый способ оплаты", example = "TRANSFER", allowableValues = {"CARD",
+      "CASH", "TRANSFER"})
   private String paymentMethod;
 }
