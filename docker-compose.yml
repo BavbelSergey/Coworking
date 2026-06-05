@@ -1,8 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    ports:
-      - "${POSTGRES_HOST_PORT}:${POSTGRES_CONTAINER_PORT}"
+    network_mode: host
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -16,13 +15,12 @@ services:
       retries: ${POSTGRES_HEALTHCHECK_RETRIES}
 
   backend:
+    network_mode: host
     build:
       context: ./backend
-    ports:
-      - "${BACKEND_HOST_PORT}:${BACKEND_CONTAINER_PORT}"
     environment:
-      SERVER_PORT: ${BACKEND_CONTAINER_PORT}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_CONTAINER_PORT}/${POSTGRES_DB}
+      PORT: ${BACKEND_CONTAINER_PORT}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://127.0.0.1:${POSTGRES_CONTAINER_PORT}/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
@@ -32,10 +30,9 @@ services:
         condition: service_healthy
 
   frontend:
+    network_mode: host
     build:
       context: ./frontend
-    ports:
-      - "${FRONTEND_HOST_PORT}:${FRONTEND_CONTAINER_PORT}"
     depends_on:
       - backend
 
